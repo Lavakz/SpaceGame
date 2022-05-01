@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Mesh Viewer</title>
+
+	<!--   Begin GLSL 3.0 Shader code -->
+	<script id="vertex-shader" type="x-shader/x-vertex">
+        #version 300 es
+        in  vec4 a_coords;
+        in  vec3 a_normals;
+
+        uniform mat4 u_modelViewMatrix;
+        uniform mat4 u_projectionMatrix;
+        uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+        uniform vec4 lightPosition;
+        uniform float shininess;
+
+        //flat out vec4 t_color;
+        out vec4 t_color;
+
+        void main() {
+            // Transform vertex position into eye coordinates
+            vec3 pos = -(u_modelViewMatrix * a_coords).xyz;
+            
+            // Here the light is part of the model
+            vec3 light = (u_modelViewMatrix * lightPosition).xyz;
+           
+            // Normalized vector from pos to light
+            vec3 L = normalize( light - pos );
+
+            // Next two lines compute halfway vector, which is unnecessary in diffuse.
+            vec3 E = normalize( -pos );
+            vec3 H = normalize( L + E );
+            
+            vec4 NN = vec4(a_normals,0);
+
+            // Transform vertex normal into eye coordinates
+            vec3 N = normalize( (u_modelViewMatrix*NN).xyz);
+            // Note the above line is valid in this case, but not in general for modelview matrices used to transform the normals
+            
+            // Compute terms in the illumination equation
+            vec4 ambient = ambientProduct;
+
+            float Kd = max( dot(L, N), 0.0 );
+            vec4  diffuse = Kd*diffuseProduct;
+
+            float Ks = pow( max(dot(N, H), 0.0), shininess );
+            vec4  specular = Ks * specularProduct;
+            
+            if( dot(L, N) < 0.0 ) {
+                specular = vec4(0.0, 0.0, 0.0, 1.0);
+            } 
+
+            gl_Position = u_projectionMatrix * u_modelViewMatrix * a_coords;
+            t_color = ambient + diffuse + specular;
+            
+            t_color.a = 1.0;
+        }    
+
+	</script>
+
+	<script id="fragment-shader" type="x-shader/x-fragment">
+		#version 300 es
+		precision mediump float;
+        //flat in vec4 t_color;
+        in vec4 t_color;
+		out vec4 f_color;
+
+		void main() {
+			f_color = t_color;
+		}
+	</script>
+	<!--   End GLSL 3.0 Shader code -->
+
+    <script type="text/javascript" src="Spaceship.js"></script>
+
+	<script type="text/javascript" src="CS371utils.js"></script>
+	<script type="text/javascript" src="SpaceGame.js"></script>
+</head>
+
+<body onload="init();">
+	<canvas id="gl-canvas" style="float:left; margin-right: 5px;" width="600" height="600">>
+		Oops ... your browser doesn't support the HTML5 canvas element
+	</canvas>
+</body>
+</html>
