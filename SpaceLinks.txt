@@ -1,0 +1,11 @@
+
+Textures:
+https://polyhaven.com/
+https://www.texturesforplanets.com/texture-packs.shtml
+
+Mesh:
+https://www.reddit.com/r/gamedev/comments/7qymqo/free_lowpoly_spaceships/
+https://people.sc.fsu.edu/~jburkardt/data/obj/obj.html
+
+Materials:
+http://devernay.free.fr/cours/opengl/materials.html
