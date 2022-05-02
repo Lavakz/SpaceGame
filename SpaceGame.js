@@ -1,15 +1,13 @@
 let canvas;
 let gl;
 
-let near = -100;
-let far = 100;
-let left = -10.0;
-let right = 10.0;
-let ytop = 10.0;
-let bottom = -10.0;
+let near = 1;
+let far = 300;
 
 let at = vec3(1.0, 0.0, 0.0);
 let up = vec3(0.0, 1.0, 0.0);
+let eyeX=0, eyeY=0, eyeZ=5;
+let eye;
 
 let uniformModelView, uniformProjection;
 let modelViewMatrix, projectionMatrix;
@@ -17,7 +15,7 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(0.0, 0.0, 1.0, 1.0);
+let lightPosition = vec4(0.0, 1.0, 1.0, 1.0);
 
 let program;
 let objects;
@@ -37,6 +35,10 @@ function init() {
 
 	program = initShaders(gl, "vertex-shader", "fragment-shader");
 	gl.useProgram(program);
+
+	eye = vec3(eyeX,eyeY,eyeZ);
+    modelViewMatrix = lookAt(eye, at , up); 
+	projectionMatrix = perspective( 30, gl.canvas.width/gl.canvas.height, near, far );
 
 	uniformModelView = gl.getUniformLocation(program, "u_modelViewMatrix");
 	uniformProjection = gl.getUniformLocation(program, "u_projectionMatrix");
@@ -72,10 +74,10 @@ function init() {
 	}
 
 	const planet1 = {
-		vertices: v=createSphereVertices(2.0, 45, 45), 
+		vertices: v=createSphereVertices(30.0, 45, 45), 
 		vao: setUpVertexObject(v, true),
 		indices: v.indices,
-		transform: translate(0, 0, 0),
+		transform: translate(80.0, 0.0, -200.0),
 		material: chrome
 	};
 
@@ -111,9 +113,15 @@ function keyHandler(event) {
 	switch (event.key) {
 		case "ArrowLeft": ; break;
 		case "ArrowRight": ; break;
-		case "ArrowUp": ; break;
+		case "ArrowUp": decreaseZ(); break;
 		case "ArrowDown": ; break;
 	}
+}
+
+function decreaseZ(){
+    let newEye = getEyePosition(modelViewMatrix); 
+    newEye[2] -= 1.0;
+    setEyePosition(modelViewMatrix, newEye)
 }
 
 function updateTimer() {
@@ -142,31 +150,6 @@ function updateTimer() {
 
 	timer.innerHTML = minutes + ":" + seconds;
 	setTimeout(updateTimer, Math.max(0, 500 - dt));
-}
-
-
-function draw() {
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-	eye = vec3(0.0, 0.0, 0.0);
-
-	modelViewMatrix = lookAt(eye, at, up);
-
-	objects[0].transform = mult(modelViewMatrix, translate(0.0, -5.0, 0));
-
-	projectionMatrix = ortho(left, right, bottom, ytop, near, far);
-	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
-
-	objects.forEach((obj) => {
-		gl.uniformMatrix4fv(uniformModelView, false,
-			flatten(mult(modelViewMatrix, obj.transform)));
-		drawVertexObject(obj.vao,
-			obj.indices.length,
-			obj.material.ambient, obj.material.diffuse,
-			obj.material.specular, obj.material.shininess);
-	});
-
-	requestAnimationFrame(draw);
 }
 
 //Loads a VAO and draws it
@@ -229,7 +212,7 @@ function setUpVertexObject(shape, isTextured) {
 
 function configureTexture( image, program ) {
     texture = gl.createTexture();
-    gl.activeTexture( gl.TEXTURE0 );  //0 active by default
+    gl.activeTexture( gl.TEXTURE0 );  
     gl.bindTexture(gl.TEXTURE_2D, texture);
     
     //Flip the Y values to match the WebGL coordinates
@@ -247,4 +230,55 @@ function configureTexture( image, program ) {
     gl.uniform1i(gl.getUniformLocation(program, "u_textureMap"), 0);
 }
 
+function getEyePosition( mv ){
+    let u = vec3(mv[0][0],mv[0][1],mv[0][2]);       
+    let v = vec3(mv[1][0],mv[1][1],mv[1][2]); 
+    let n = vec3(mv[2][0],mv[2][1],mv[2][2]); 
+    let t = vec3(mv[0][3],mv[1][3],mv[2][3]);
 
+    let axesInv = inverse3([u,v,n]);
+    let eye = multM3V3(axesInv,t);
+    return vec3(-eye[0],-eye[1],-eye[2]);
+}
+
+function setEyePosition( mv, eye ){
+    let u = vec3(mv[0][0],mv[0][1],mv[0][2]);       
+    let v = vec3(mv[1][0],mv[1][1],mv[1][2]); 
+    let n = vec3(mv[2][0],mv[2][1],mv[2][2]); 
+
+    let negEye = vec3(-eye[0], -eye[1], -eye[2]);
+    mv[0][3] = dot(negEye,u);
+    mv[1][3] = dot(negEye,v);
+    mv[2][3] = dot(negEye,n);
+}
+
+function multM3V3( u, v ) {
+    let result = [];
+    result[0] = u[0][0]*v[0] + u[0][1]*v[1] + u[0][2]*v[2];
+    result[1] = u[1][0]*v[0] + u[1][1]*v[1] + u[1][2]*v[2];
+    result[2] = u[2][0]*v[0] + u[2][1]*v[1] + u[2][2]*v[2];
+    return result;
+}
+
+function draw() {
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+	modelViewMatrix = lookAt(eye, at, up);
+
+	let eyePos = getEyePosition(modelViewMatrix) 
+	objects[0].transform = translate(eyePos[0], eyePos[1]-3, eyePos[2]-30);
+
+	projectionMatrix = perspective(30.0, gl.canvas.width/gl.canvas.height, near, far);
+	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
+
+	objects.forEach((obj) => {
+		gl.uniformMatrix4fv(uniformModelView, false,
+			flatten(mult(modelViewMatrix, obj.transform)));
+		drawVertexObject(obj.vao,
+			obj.indices.length,
+			obj.material.ambient, obj.material.diffuse,
+			obj.material.specular, obj.material.shininess);
+	});
+
+	requestAnimationFrame(draw);
+}
