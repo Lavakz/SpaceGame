@@ -49,7 +49,7 @@ function init() {
 		shininess: 0.6
 	}
 
-	// Meshes
+	// Shapes
 	const spaceshipMesh = {
 		vertices: myMesh.vertices[0].values,
 		indices: myMesh.connectivity[0].indices,
@@ -71,7 +71,15 @@ function init() {
 		material: chrome
 	}
 
-	objects = [myShip, rivalShip];
+	const planet1 = {
+		vertices: v=createSphereVertices(2.0, 45, 45), 
+		vao: setUpVertexObject(v),
+		indices: v.indices,
+		transform: translate(0, 0, 0),
+		material: chrome
+	};
+
+	objects = [myShip, rivalShip, planet1];
 
 	document.onkeydown = function(ev) { keyHandler(ev); };
 
