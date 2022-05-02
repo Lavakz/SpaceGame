@@ -9,6 +9,8 @@
         #version 300 es
         in  vec4 a_coords;
         in  vec3 a_normals;
+        in vec4 a_color;
+        in vec2 a_texCoord;
 
         uniform mat4 u_modelViewMatrix;
         uniform mat4 u_projectionMatrix;
@@ -17,19 +19,22 @@
         uniform float shininess;
 
         //flat out vec4 t_color;
-        out vec4 t_color;
+        out vec4 v_color;
+        out vec2 v_texCoord;
 
         void main() {
+            v_color = a_color;
+            v_texCoord = a_texCoord;
+
             // Transform vertex position into eye coordinates
             vec3 pos = -(u_modelViewMatrix * a_coords).xyz;
             
             // Here the light is part of the model
             vec3 light = (u_modelViewMatrix * lightPosition).xyz;
-           
+
             // Normalized vector from pos to light
             vec3 L = normalize( light - pos );
 
-            // Next two lines compute halfway vector, which is unnecessary in diffuse.
             vec3 E = normalize( -pos );
             vec3 H = normalize( L + E );
             
@@ -37,8 +42,7 @@
 
             // Transform vertex normal into eye coordinates
             vec3 N = normalize( (u_modelViewMatrix*NN).xyz);
-            // Note the above line is valid in this case, but not in general for modelview matrices used to transform the normals
-            
+
             // Compute terms in the illumination equation
             vec4 ambient = ambientProduct;
 
@@ -48,14 +52,14 @@
             float Ks = pow( max(dot(N, H), 0.0), shininess );
             vec4  specular = Ks * specularProduct;
             
-            if( dot(L, N) < 0.0 ) {
+            if( dot(L, N) < 0.8 ) {
                 specular = vec4(0.0, 0.0, 0.0, 1.0);
             } 
 
             gl_Position = u_projectionMatrix * u_modelViewMatrix * a_coords;
-            t_color = ambient + diffuse + specular;
+            v_color = ambient + diffuse + specular;
             
-            t_color.a = 1.0;
+            v_color.a = 1.0;
         }    
 
 	</script>
@@ -63,12 +67,13 @@
 	<script id="fragment-shader" type="x-shader/x-fragment">
 		#version 300 es
 		precision mediump float;
-        //flat in vec4 t_color;
-        in vec4 t_color;
+        in vec2 v_texCoord;
+        in vec4 v_color;
 		out vec4 f_color;
+        uniform sampler2D u_textureMap;
 
 		void main() {
-			f_color = t_color;
+            f_color = v_color * texture(u_textureMap, v_texCoord);
 		}
 	</script>
 	<!--   End GLSL 3.0 Shader code -->
@@ -84,5 +89,7 @@
 	<canvas id="gl-canvas" style="float:left; margin-right: 5px;" width="600" height="600">>
 		Oops ... your browser doesn't support the HTML5 canvas element
 	</canvas>
+
+    <img id = "volcanoPlanetTex" src = "textures/Volcanic1024.png" hidden></img>
 </body>
 </html>

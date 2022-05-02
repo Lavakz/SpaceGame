@@ -71,13 +71,20 @@ function init() {
 
 	const planet1 = {
 		vertices: v=createSphereVertices(2.0, 45, 45), 
-		vao: setUpVertexObject(v),
+		vao: setUpVertexObject(v, true),
 		indices: v.indices,
 		transform: translate(0, 0, 0),
 		material: chrome
 	};
 
 	objects = [myShip, rivalShip, planet1];
+
+	//Initialize texture
+    let image = new Image();
+    image.src = document.getElementById("volcanoPlanetTex").src; 
+    image.onload = function() {
+        configureTexture( image, program );
+    }
 
 	document.onkeydown = function(ev) { keyHandler(ev); };
 
@@ -145,11 +152,10 @@ function drawVertexObject(vao, iLength, mA, mD, mS, s) {
 }
 
 //Sets up a VAO 
-function setUpVertexObject(shape) {
+function setUpVertexObject(shape, isTextured) {
 	let indices = shape.indices;
 	let vertices = shape.vertices;
 	let normals = shape.normals;
-	//let texcoords = shape.texcoord;
 
 	vao = gl.createVertexArray();
 	gl.bindVertexArray(vao);
@@ -171,18 +177,41 @@ function setUpVertexObject(shape) {
 	let attributeNormals = gl.getAttribLocation(program, "a_normals");
 	gl.vertexAttribPointer(attributeNormals, 3, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(attributeNormals);
-	/*
-		//set up texture buffer
+
+	//set up texture buffer
+	if (isTextured){
+		let texcoords = shape.texcoord;
 		gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
 		gl.bufferData(gl.ARRAY_BUFFER, flatten(texcoords), gl.STATIC_DRAW);
 		let texCoordLoc = gl.getAttribLocation(program, "a_texCoord");
 		gl.vertexAttribPointer(texCoordLoc, 2, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(texCoordLoc);
-	*/
-	//finalize the vao; not required, but considered good practice
+	}
+
+	//finalize the vao
 	gl.bindVertexArray(null);
 
 	return vao;
+}
+
+function configureTexture( image, program ) {
+    texture = gl.createTexture();
+    gl.activeTexture( gl.TEXTURE0 );  //0 active by default
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    
+    //Flip the Y values to match the WebGL coordinates
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    
+    //Specify the image as a texture array:
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+         
+    //Set filters and parameters
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    
+    //Link texture to a sampler in fragment shader
+    gl.uniform1i(gl.getUniformLocation(program, "u_textureMap"), 0);
 }
 
 
