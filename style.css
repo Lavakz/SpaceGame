@@ -1,0 +1,28 @@
+@font-face{
+ font-family:'digital-clock-font';
+ src: url('alarmclock.ttf') format("truetype");
+}
+
+#container {
+    position: relative;
+}
+
+#gl-canvas {
+    margin-right: 5px;
+    z-index: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+#timer {
+    z-index: 1;
+    color: red;
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin-top: 0;
+    padding: 10px 10px;
+    font-size: 30px;
+    font-family: 'digital-clock-font', cursive;
+}

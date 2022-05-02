@@ -22,6 +22,8 @@ let lightPosition = vec4(0.0, 0.0, 1.0, 1.0);
 let program;
 let objects;
 
+let timer;
+
 function init() {
 
 	let canvas = document.getElementById("gl-canvas");
@@ -88,6 +90,9 @@ function init() {
 
 	document.onkeydown = function(ev) { keyHandler(ev); };
 
+	timer = document.getElementById("timer").innerHTML;
+	setTimeout(updateTimer, 500);
+
 	//set up screen
 	gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 	gl.clearColor(0, 0, 0, 1);
@@ -109,6 +114,34 @@ function keyHandler(event) {
 		case "ArrowUp": ; break;
 		case "ArrowDown": ; break;
 	}
+}
+
+function updateTimer() {
+	let dt = Date.now() - (Date.now() + 500);
+	let timer = document.getElementById("timer");
+	let seconds = timer.innerHTML.substring(3);
+	let minutes = timer.innerHTML.substring(0, 2);
+	
+	if (parseInt(seconds) + 1 === 60) {
+		let newMinutes = parseInt(minutes) + 1;
+		minutes = newMinutes.toString();
+
+		if (minutes.length === 1) {
+			minutes = "0" + minutes;
+		}
+
+		seconds = "00";
+	} else {
+		let newSeconds = parseInt(seconds) + 1;
+		seconds = newSeconds.toString();
+
+		if (seconds.length === 1) {
+			seconds = "0" + seconds;
+		}
+	}
+
+	timer.innerHTML = minutes + ":" + seconds;
+	setTimeout(updateTimer, Math.max(0, 500 - dt));
 }
 
 
