@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<meta charset="UTF-8">
-	<title>Mesh Viewer</title>
 
-	<!--   Begin GLSL 3.0 Shader code -->
-	<script id="vertex-shader" type="x-shader/x-vertex">
+<head>
+    <meta charset="UTF-8">
+    <title>Mesh Viewer</title>
+
+    <!--   Begin GLSL 3.0 Shader code -->
+    <script id="vertex-shader" type="x-shader/x-vertex">
         #version 300 es
         in  vec4 a_coords;
         in  vec3 a_normals;
@@ -60,7 +61,7 @@
 
 	</script>
 
-	<script id="fragment-shader" type="x-shader/x-fragment">
+    <script id="fragment-shader" type="x-shader/x-fragment">
 		#version 300 es
 		precision mediump float;
         //flat in vec4 t_color;
@@ -71,17 +72,26 @@
 			f_color = t_color;
 		}
 	</script>
-	<!--   End GLSL 3.0 Shader code -->
+    <!--   End GLSL 3.0 Shader code -->
 
     <script type="text/javascript" src="Spaceship.js"></script>
 
-	<script type="text/javascript" src="CS371utils.js"></script>
-	<script type="text/javascript" src="SpaceGame.js"></script>
+    <script type="text/javascript" src="CS371utils.js"></script>
+    <script type="text/javascript" src="SpaceGame.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans&display=swap" rel="stylesheet">
 </head>
 
 <body onload="init();">
-	<canvas id="gl-canvas" style="float:left; margin-right: 5px;" width="600" height="600">>
-		Oops ... your browser doesn't support the HTML5 canvas element
-	</canvas>
+    <div id="container">
+        <canvas id="gl-canvas" width="600" height="600">>
+            Oops ... your browser doesn't support the HTML5 canvas element
+        </canvas>
+        <p id="timer">00:00</p>
+    </div>
 </body>
+
 </html>
