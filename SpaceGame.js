@@ -15,7 +15,7 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(-1.0, 0.0, 0.0, 0.0 );
+let lightPosition = vec4(1.0, 0.0, 0.0, 0.0 );
 
 let program;
 let objects;
@@ -62,14 +62,10 @@ function init() {
 	const myShip = {
 		vao: setUpVertexObject(spaceshipMesh),
 		indices: spaceshipMesh.indices,
-		transform: translate(0.0, 0.0, 0.0),
-		material: chrome
-	}
-
-	const rivalShip = {
-		vao: setUpVertexObject(spaceshipMesh),
-		indices: spaceshipMesh.indices,
-		transform: mult(translate(0.0, 4.0, 4.0), rotateZ(30.0)),
+		transform() {
+			let eyePos = getEyePosition(modelViewMatrix) 
+			return translate(eyePos[0]+6, eyePos[1]-5, eyePos[2]-30);
+		},
 		material: chrome
 	}
 
@@ -77,11 +73,11 @@ function init() {
 		vertices: v=createSphereVertices(30.0, 45, 45), 
 		vao: setUpVertexObject(v, true),
 		indices: v.indices,
-		transform: translate(80.0, 0.0, -200.0),
+		transform() {return translate(80.0, 0.0, -250.0)},
 		material: chrome
 	};
 
-	objects = [myShip, rivalShip, planet1];
+	objects = [myShip, planet1];
 
 	//Initialize texture
     let image = new Image();
@@ -109,19 +105,28 @@ function init() {
 }
 
 function keyHandler(event) {
-	console.log(event.key);
 	switch (event.key) {
-		case "ArrowLeft": ; break;
-		case "ArrowRight": ; break;
-		case "ArrowUp": decreaseZ(); break;
-		case "ArrowDown": ; break;
+		case "ArrowLeft": rollLeft(); break;
+		case "ArrowRight": rollRight(); break;
+		case "ArrowUp": turnUp(); break;
+		case "ArrowDown": turnDown(); break;
 	}
 }
 
-function decreaseZ(){
-    let newEye = getEyePosition(modelViewMatrix); 
-    newEye[2] -= 1.0;
-    setEyePosition(modelViewMatrix, newEye)
+function bankLeft(){
+    // rotate around at vector
+}
+
+function bankRight(){
+    // rotate around at vector
+}
+
+function turnUp(){
+    // rotate at vector around myShip's x axies
+}
+
+function turnDown(){
+    // rotate at vector around myShip's x axies
 }
 
 function updateTimer() {
@@ -267,11 +272,12 @@ function draw() {
 	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
 
 	let eyePos = getEyePosition(modelViewMatrix) 
-	objects[0].transform = translate(eyePos[0]+6, eyePos[1]-5, eyePos[2]-30);
+	eyePos[2] -= 1; // always move forward
+	setEyePosition(modelViewMatrix, eyePos);
 
 	objects.forEach((obj) => {
 		gl.uniformMatrix4fv(uniformModelView, false,
-			flatten(mult(modelViewMatrix, obj.transform)));
+			flatten(mult(modelViewMatrix, obj.transform())));
 		drawVertexObject(obj.vao,
 			obj.indices.length,
 			obj.material.ambient, obj.material.diffuse,
