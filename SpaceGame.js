@@ -1,5 +1,9 @@
+"use strict";
+
 let canvas;
 let gl;
+
+const R_STEP = 1.0;
 
 let near = -100;
 let far = 100;
@@ -8,6 +12,7 @@ let right = 10.0;
 let ytop = 10.0;
 let bottom = -10.0;
 
+let eye;
 let at = vec3(1.0, 0.0, 0.0);
 let up = vec3(0.0, 1.0, 0.0);
 
@@ -23,6 +28,7 @@ let program;
 let objects;
 
 let timer;
+let delay = 750;
 
 function init() {
 
@@ -41,50 +47,66 @@ function init() {
 	uniformModelView = gl.getUniformLocation(program, "u_modelViewMatrix");
 	uniformProjection = gl.getUniformLocation(program, "u_projectionMatrix");
 
+	eye = vec3(0.0,0.0,0.0);
+	modelViewMatrix = lookAt(eye, at, up);
+
 	// Materials
 	const chrome = {
 		ambient: vec4(0.25, 0.25, 0.25, 1.0),
 		diffuse: vec4(0.4, 0.4, 0.4, 1.0),
 		specular: vec4(0.77, 0.77, 0.77, 1.0),
 		shininess: 0.6
-	}
+	};
+
+	const gold = {
+		ambient: vec4(0.24725, 0.1995, 0.0745, 1.0),
+		diffuse: vec4(0.75164, 0.60648, 0.22648, 1.0),
+		specular: vec4(0.628281, 0.555802, 0.366065, 1.0),
+		shininess: 0.4
+	};
 
 	// Shapes
 	const spaceshipMesh = {
 		vertices: myMesh.vertices[0].values,
 		indices: myMesh.connectivity[0].indices,
 		normals: myMesh.vertices[1].values
-	}
+	};
 
 	// Objects
 	const myShip = {
 		vao: setUpVertexObject(spaceshipMesh),
 		indices: spaceshipMesh.indices,
-		transform: translate(0.0, 0.0, 0.0),
+		transform: mult(translate(0.0, -5.0, 0), modelViewMatrix),
 		material: chrome
-	}
+	};
 
 	const rivalShip = {
 		vao: setUpVertexObject(spaceshipMesh),
 		indices: spaceshipMesh.indices,
 		transform: mult(translate(0.0, 4.0, 4.0), rotateZ(30.0)),
 		material: chrome
-	}
-
-	const planet1 = {
-		vertices: v=createSphereVertices(2.0, 45, 45), 
-		vao: setUpVertexObject(v),
-		indices: v.indices,
-		transform: translate(0, 0, 0),
-		material: chrome
 	};
 
-	objects = [myShip, rivalShip, planet1];
+	const ring = {
+		// vao,
+		// indices,
+		// transform,
+		material: gold
+	};
+
+	// const planet1 = {
+	// 	vertices: v=createSphereVertices(2.0, 45, 45), 
+	// 	vao: setUpVertexObject(v),
+	// 	indices: v.indices,
+	// 	transform: translate(0, 0, 0),
+	// 	material: chrome
+	// };
+
+	objects = [myShip, rivalShip/*, planet1*/];
 
 	document.onkeydown = function(ev) { keyHandler(ev); };
 
-	timer = document.getElementById("timer").innerHTML;
-	setTimeout(updateTimer, 500);
+	setTimeout(updateTimer, delay);
 
 	//set up screen
 	gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -100,17 +122,36 @@ function init() {
 }
 
 function keyHandler(event) {
-	console.log(event.key);
 	switch (event.key) {
-		case "ArrowLeft": ; break;
-		case "ArrowRight": ; break;
-		case "ArrowUp": ; break;
-		case "ArrowDown": ; break;
+		case "ArrowLeft":
+			moveObject(objects[0], "left");
+			break;
+		case "ArrowRight":
+			moveObject(objects[0], "right");
+			break;
+		case "ArrowUp":
+			moveObject(objects[0], "forward");
+			break;
+		case "ArrowDown":
+			moveObject(objects[0], "slowdown");
+			break;
+	}
+}
+
+function moveObject(object, direction) {
+	if (direction === "left") {
+		object.transform = mult(rotateY(R_STEP), object.transform);
+	} else if (direction === "right") {
+		object.transform = mult(rotateY(-R_STEP), object.transform);
+	} else if (direction === "forward") {
+		object.transform = mult(translate(R_STEP,0,0), object.transform);
+	} else if (direction === "slowdown") {
+		// slow the speed of the ship
 	}
 }
 
 function updateTimer() {
-	let dt = Date.now() - (Date.now() + 500);
+	let dt = Date.now() - (Date.now() + delay);
 	let timer = document.getElementById("timer");
 	let seconds = timer.innerHTML.substring(3);
 	let minutes = timer.innerHTML.substring(0, 2);
@@ -134,18 +175,14 @@ function updateTimer() {
 	}
 
 	timer.innerHTML = minutes + ":" + seconds;
-	setTimeout(updateTimer, Math.max(0, 500 - dt));
+	setTimeout(updateTimer, Math.max(0, delay - dt));
 }
 
 
 function draw() {
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	eye = vec3(0.0, 0.0, 0.0);
-
 	modelViewMatrix = lookAt(eye, at, up);
-
-	objects[0].transform = mult(modelViewMatrix, translate(0.0, -5.0, 0));
 
 	projectionMatrix = ortho(left, right, bottom, ytop, near, far);
 	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
@@ -184,7 +221,7 @@ function setUpVertexObject(shape) {
 	let normals = shape.normals;
 	//let texcoords = shape.texcoord;
 
-	vao = gl.createVertexArray();
+	let vao = gl.createVertexArray();
 	gl.bindVertexArray(vao);
 
 	//set up index buffer, if using
