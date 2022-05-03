@@ -15,7 +15,7 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(0.0, 1.0, 1.0, 1.0);
+let lightPosition = vec4(-1.0, 0.0, 0.0, 0.0 );
 
 let program;
 let objects;
@@ -263,13 +263,11 @@ function multM3V3( u, v ) {
 function draw() {
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	modelViewMatrix = lookAt(eye, at, up);
-
-	let eyePos = getEyePosition(modelViewMatrix) 
-	objects[0].transform = translate(eyePos[0], eyePos[1]-3, eyePos[2]-30);
-
 	projectionMatrix = perspective(30.0, gl.canvas.width/gl.canvas.height, near, far);
 	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
+
+	let eyePos = getEyePosition(modelViewMatrix) 
+	objects[0].transform = translate(eyePos[0]+6, eyePos[1]-5, eyePos[2]-30);
 
 	objects.forEach((obj) => {
 		gl.uniformMatrix4fv(uniformModelView, false,
