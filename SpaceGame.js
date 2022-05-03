@@ -4,7 +4,7 @@ let gl;
 let near = 1;
 let far = 300;
 
-let at = vec3(1.0, 0.0, 0.0);
+let at = vec3(0.0, 0.0, -1.0);
 let up = vec3(0.0, 1.0, 0.0);
 let eyeX=0, eyeY=0, eyeZ=5;
 let eye;
@@ -64,16 +64,17 @@ function init() {
 		indices: spaceshipMesh.indices,
 		transform() {
 			let eyePos = getEyePosition(modelViewMatrix) 
-			return translate(eyePos[0]+6, eyePos[1]-5, eyePos[2]-30);
+			return translate(eyePos[0], eyePos[1]-5, eyePos[2]-30);
 		},
-		material: chrome
+		material: chrome,
+		speed: 2
 	}
 
 	const planet1 = {
 		vertices: v=createSphereVertices(30.0, 45, 45), 
 		vao: setUpVertexObject(v, true),
 		indices: v.indices,
-		transform() {return translate(80.0, 0.0, -250.0)},
+		transform() {return translate(50.0, 0.0, -250.0)},
 		material: chrome
 	};
 
@@ -106,10 +107,10 @@ function init() {
 
 function keyHandler(event) {
 	switch (event.key) {
-		case "ArrowLeft": rollLeft(); break;
-		case "ArrowRight": rollRight(); break;
-		case "ArrowUp": turnUp(); break;
-		case "ArrowDown": turnDown(); break;
+		case "a": rollLeft(); break;
+		case "d": rollRight(); break;
+		case "w": turnUp(0.1); break;
+		case "s": turnDown(0.1); break;
 	}
 }
 
@@ -121,12 +122,16 @@ function bankRight(){
     // rotate around at vector
 }
 
-function turnUp(){
-    // rotate at vector around myShip's x axies
+function turnUp(theta){
+	let c = Math.cos(theta);
+	let s = Math.cos(theta);
+    at = normalize(vec3(at[0], // rotate at vector
+				  (at[1]*c)-(at[2]*s), 
+				  (at[1]*s)+(at[2]*c)));
 }
 
-function turnDown(){
-    // rotate at vector around myShip's x axies
+function turnDown(theta){
+    turnUp(-theta)
 }
 
 function updateTimer() {
@@ -272,7 +277,9 @@ function draw() {
 	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
 
 	let eyePos = getEyePosition(modelViewMatrix) 
-	eyePos[2] -= 1; // always move forward
+	eyePos = vec3(eyePos[0]+(at[0]/objects[0].speed), // move in at direction
+				  eyePos[1]+(at[1]/objects[0].speed), 
+				  eyePos[2]+(at[2]/objects[0].speed));
 	setEyePosition(modelViewMatrix, eyePos);
 
 	objects.forEach((obj) => {
