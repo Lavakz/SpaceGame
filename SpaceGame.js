@@ -3,18 +3,13 @@
 let canvas;
 let gl;
 
-const R_STEP = 1.0;
-
-let near = -100;
-let far = 100;
-let left = -10.0;
-let right = 10.0;
-let ytop = 10.0;
-let bottom = -10.0;
+let near = 1;
+let far = 300;
 
 let eye;
 let at = vec3(1.0, 0.0, 0.0);
 let up = vec3(0.0, 1.0, 0.0);
+let eyeX=0, eyeY=0, eyeZ=5;
 
 let uniformModelView, uniformProjection;
 let modelViewMatrix, projectionMatrix;
@@ -22,7 +17,7 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(0.0, 0.0, 1.0, 1.0);
+let lightPosition = vec4(1.0, 0.0, 0.0, 0.0 );
 
 let program;
 let objects;
@@ -43,6 +38,10 @@ function init() {
 
 	program = initShaders(gl, "vertex-shader", "fragment-shader");
 	gl.useProgram(program);
+
+	eye = vec3(eyeX,eyeY,eyeZ);
+    modelViewMatrix = lookAt(eye, at , up); 
+	projectionMatrix = perspective( 30, gl.canvas.width/gl.canvas.height, near, far );
 
 	uniformModelView = gl.getUniformLocation(program, "u_modelViewMatrix");
 	uniformProjection = gl.getUniformLocation(program, "u_projectionMatrix");
@@ -76,14 +75,18 @@ function init() {
 	const myShip = {
 		vao: setUpVertexObject(spaceshipMesh),
 		indices: spaceshipMesh.indices,
-		transform: mult(translate(0.0, -5.0, 0), modelViewMatrix),
+		transform() {
+			let eyePos = getEyePosition(modelViewMatrix) 
+			return translate(eyePos[0]+6, eyePos[1]-5, eyePos[2]-30);
+		},
 		material: chrome
 	};
 
-	const rivalShip = {
-		vao: setUpVertexObject(spaceshipMesh),
-		indices: spaceshipMesh.indices,
-		transform: mult(translate(0.0, 4.0, 4.0), rotateZ(30.0)),
+	const planet1 = {
+		vertices: v=createSphereVertices(30.0, 45, 45), 
+		vao: setUpVertexObject(v, true),
+		indices: v.indices,
+		transform() {return translate(80.0, 0.0, -250.0)},
 		material: chrome
 	};
 
@@ -94,15 +97,14 @@ function init() {
 		material: gold
 	};
 
-	// const planet1 = {
-	// 	vertices: v=createSphereVertices(2.0, 45, 45), 
-	// 	vao: setUpVertexObject(v),
-	// 	indices: v.indices,
-	// 	transform: translate(0, 0, 0),
-	// 	material: chrome
-	// };
+	objects = [myShip, planet1];
 
-	objects = [myShip, rivalShip/*, planet1*/];
+	//Initialize texture
+    let image = new Image();
+    image.src = document.getElementById("volcanoPlanetTex").src; 
+    image.onload = function() {
+        configureTexture( image, program );
+    }
 
 	document.onkeydown = function(ev) { keyHandler(ev); };
 
@@ -123,31 +125,27 @@ function init() {
 
 function keyHandler(event) {
 	switch (event.key) {
-		case "ArrowLeft":
-			moveObject(objects[0], "left");
-			break;
-		case "ArrowRight":
-			moveObject(objects[0], "right");
-			break;
-		case "ArrowUp":
-			moveObject(objects[0], "forward");
-			break;
-		case "ArrowDown":
-			moveObject(objects[0], "slowdown");
-			break;
+		case "ArrowLeft": rollLeft(); break;
+		case "ArrowRight": rollRight(); break;
+		case "ArrowUp": turnUp(); break;
+		case "ArrowDown": turnDown(); break;
 	}
 }
 
-function moveObject(object, direction) {
-	if (direction === "left") {
-		object.transform = mult(rotateY(R_STEP), object.transform);
-	} else if (direction === "right") {
-		object.transform = mult(rotateY(-R_STEP), object.transform);
-	} else if (direction === "forward") {
-		object.transform = mult(translate(R_STEP,0,0), object.transform);
-	} else if (direction === "slowdown") {
-		// slow the speed of the ship
-	}
+function bankLeft(){
+    // rotate around at vector
+}
+
+function bankRight(){
+    // rotate around at vector
+}
+
+function turnUp(){
+    // rotate at vector around myShip's x axies
+}
+
+function turnDown(){
+    // rotate at vector around myShip's x axies
 }
 
 function updateTimer() {
@@ -178,27 +176,6 @@ function updateTimer() {
 	setTimeout(updateTimer, Math.max(0, delay - dt));
 }
 
-
-function draw() {
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-	modelViewMatrix = lookAt(eye, at, up);
-
-	projectionMatrix = ortho(left, right, bottom, ytop, near, far);
-	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
-
-	objects.forEach((obj) => {
-		gl.uniformMatrix4fv(uniformModelView, false,
-			flatten(mult(modelViewMatrix, obj.transform)));
-		drawVertexObject(obj.vao,
-			obj.indices.length,
-			obj.material.ambient, obj.material.diffuse,
-			obj.material.specular, obj.material.shininess);
-	});
-
-	requestAnimationFrame(draw);
-}
-
 //Loads a VAO and draws it
 function drawVertexObject(vao, iLength, mA, mD, mS, s) {
 	let ambientProduct = mult(lightAmbient, mA);
@@ -215,11 +192,10 @@ function drawVertexObject(vao, iLength, mA, mD, mS, s) {
 }
 
 //Sets up a VAO 
-function setUpVertexObject(shape) {
+function setUpVertexObject(shape, isTextured) {
 	let indices = shape.indices;
 	let vertices = shape.vertices;
 	let normals = shape.normals;
-	//let texcoords = shape.texcoord;
 
 	let vao = gl.createVertexArray();
 	gl.bindVertexArray(vao);
@@ -241,18 +217,91 @@ function setUpVertexObject(shape) {
 	let attributeNormals = gl.getAttribLocation(program, "a_normals");
 	gl.vertexAttribPointer(attributeNormals, 3, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(attributeNormals);
-	/*
-		//set up texture buffer
+
+	//set up texture buffer
+	if (isTextured){
+		let texcoords = shape.texcoord;
 		gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
 		gl.bufferData(gl.ARRAY_BUFFER, flatten(texcoords), gl.STATIC_DRAW);
 		let texCoordLoc = gl.getAttribLocation(program, "a_texCoord");
 		gl.vertexAttribPointer(texCoordLoc, 2, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(texCoordLoc);
-	*/
-	//finalize the vao; not required, but considered good practice
+	}
+
+	//finalize the vao
 	gl.bindVertexArray(null);
 
 	return vao;
 }
 
+function configureTexture( image, program ) {
+    texture = gl.createTexture();
+    gl.activeTexture( gl.TEXTURE0 );  
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    
+    //Flip the Y values to match the WebGL coordinates
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    
+    //Specify the image as a texture array:
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+         
+    //Set filters and parameters
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    
+    //Link texture to a sampler in fragment shader
+    gl.uniform1i(gl.getUniformLocation(program, "u_textureMap"), 0);
+}
 
+function getEyePosition( mv ){
+    let u = vec3(mv[0][0],mv[0][1],mv[0][2]);       
+    let v = vec3(mv[1][0],mv[1][1],mv[1][2]); 
+    let n = vec3(mv[2][0],mv[2][1],mv[2][2]); 
+    let t = vec3(mv[0][3],mv[1][3],mv[2][3]);
+
+    let axesInv = inverse3([u,v,n]);
+    let eye = multM3V3(axesInv,t);
+    return vec3(-eye[0],-eye[1],-eye[2]);
+}
+
+function setEyePosition( mv, eye ){
+    let u = vec3(mv[0][0],mv[0][1],mv[0][2]);       
+    let v = vec3(mv[1][0],mv[1][1],mv[1][2]); 
+    let n = vec3(mv[2][0],mv[2][1],mv[2][2]); 
+
+    let negEye = vec3(-eye[0], -eye[1], -eye[2]);
+    mv[0][3] = dot(negEye,u);
+    mv[1][3] = dot(negEye,v);
+    mv[2][3] = dot(negEye,n);
+}
+
+function multM3V3( u, v ) {
+    let result = [];
+    result[0] = u[0][0]*v[0] + u[0][1]*v[1] + u[0][2]*v[2];
+    result[1] = u[1][0]*v[0] + u[1][1]*v[1] + u[1][2]*v[2];
+    result[2] = u[2][0]*v[0] + u[2][1]*v[1] + u[2][2]*v[2];
+    return result;
+}
+
+function draw() {
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+	projectionMatrix = perspective(30.0, gl.canvas.width/gl.canvas.height, near, far);
+	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
+
+	let eyePos = getEyePosition(modelViewMatrix) 
+	eyePos[2] -= 1; // always move forward
+	setEyePosition(modelViewMatrix, eyePos);
+
+	objects.forEach((obj) => {
+		gl.uniformMatrix4fv(uniformModelView, false,
+			flatten(mult(modelViewMatrix, obj.transform())));
+		drawVertexObject(obj.vao,
+			obj.indices.length,
+			obj.material.ambient, obj.material.diffuse,
+			obj.material.specular, obj.material.shininess);
+	});
+
+	requestAnimationFrame(draw);
+}
