@@ -22,6 +22,8 @@ let lightPosition = vec4(1.0, 0.0, 0.0, 0.0 );
 let program;
 let objects;
 
+let texture;
+
 let timer;
 let delay = 750;
 
@@ -82,6 +84,8 @@ function init() {
 		material: chrome
 	};
 
+	let v;
+
 	const planet1 = {
 		vertices: v=createSphereVertices(30.0, 45, 45), 
 		vao: setUpVertexObject(v, true),
@@ -90,14 +94,15 @@ function init() {
 		material: chrome
 	};
 
-	const ring = {
-		// vao,
-		// indices,
-		// transform,
-		material: gold
-	};
+	// const ring = {
+	// 	vertices: v=createTruncatedConeVertices(1.0, 1.0, 0.2, 4, 4, false, false),
+	// 	vao: setUpVertexObject(v, false),
+	// 	indices: v.indices,
+	// 	transform() { return translate(1.0, 0.0, 1.0); },
+	// 	material: gold
+	// };
 
-	objects = [myShip, planet1];
+	objects = [myShip, planet1/*, ring*/];
 
 	//Initialize texture
     let image = new Image();

@@ -109,6 +109,7 @@ function mat3()
     var v = _argumentsToArray( arguments );
 
     var m = [];
+
     switch ( v.length ) {
     case 0:
         v[0] = 1;

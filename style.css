@@ -1,6 +1,6 @@
 @font-face{
  font-family:'digital-clock-font';
- src: url('alarmclock.ttf') format("truetype");
+ src: url('fonts/alarmclock.ttf') format("truetype");
 }
 
 #container {
