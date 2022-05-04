@@ -171,7 +171,7 @@ function createTruncatedConeVertices(
     }
     
     return {
-        positions: positions,
+        vertices: positions,
         normals: normals,
         texcoord: texcoords,
         indices: indices,

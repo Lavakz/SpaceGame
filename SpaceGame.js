@@ -17,7 +17,7 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(1.0, 0.0, 0.0, 0.0 );
+let lightPosition = vec4(10.0, 200.0, 100.0, 0.0 );
 
 let program;
 let objects;
@@ -47,9 +47,6 @@ function init() {
 
 	uniformModelView = gl.getUniformLocation(program, "u_modelViewMatrix");
 	uniformProjection = gl.getUniformLocation(program, "u_projectionMatrix");
-
-	eye = vec3(0.0,0.0,0.0);
-	modelViewMatrix = lookAt(eye, at, up);
 
 	// Materials
 	const chrome = {
@@ -83,25 +80,24 @@ function init() {
 		},
 		material: chrome,
 		speed: 2
-	}
+	};
+
+	let v;
 
 	const planet1 = {
 		vertices: v=createSphereVertices(30.0, 45, 45), 
 		vao: setUpVertexObject(v, true),
 		indices: v.indices,
-		transform() {return translate(50.0, 0.0, -250.0)},
+		transform() { return translate(50.0, 0.0, -250.0); },
 		material: chrome
 	};
 
-	// const ring = {
-	// 	vertices: v=createTruncatedConeVertices(1.0, 1.0, 0.2, 4, 4, false, false),
-	// 	vao: setUpVertexObject(v, false),
-	// 	indices: v.indices,
-	// 	transform() { return translate(1.0, 0.0, 1.0); },
-	// 	material: gold
-	// };
+	const ring = {
+		transform() { return translate(-10.0, 0.0, -50.0); },
+		material: gold
+	};
 
-	objects = [myShip, planet1/*, ring*/];
+	objects = [myShip, planet1];
 
 	//Initialize texture
     let image = new Image();
@@ -129,8 +125,8 @@ function init() {
 
 function keyHandler(event) {
 	switch (event.key) {
-		case "a": rollLeft(); break;
-		case "d": rollRight(); break;
+		case "a": bankLeft(); break;
+		case "d": bankRight(); break;
 		case "w": turnUp(0.1); break;
 		case "s": turnDown(0.1); break;
 	}
@@ -153,7 +149,7 @@ function turnUp(theta){
 }
 
 function turnDown(theta){
-    turnUp(-theta)
+    turnUp(-theta);
 }
 
 function updateTimer() {
