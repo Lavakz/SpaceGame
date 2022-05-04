@@ -14,7 +14,7 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(1.0, 1.0, 1.0, 0.0 );
+let lightPosition = vec4(0.0, 0.0, 600.0, 0.0 );
 
 let program;
 let objects;
@@ -35,9 +35,6 @@ function init() {
 
 	program = initShaders(gl, "vertex-shader", "fragment-shader");
 	gl.useProgram(program);
-
-    modelViewMatrix = lookAt(eye, at , up); 
-	projectionMatrix = perspective( 30, gl.canvas.width/gl.canvas.height, near, far );
 
 	uniformModelView = gl.getUniformLocation(program, "u_modelViewMatrix");
 	uniformProjection = gl.getUniformLocation(program, "u_projectionMatrix");
@@ -65,6 +62,7 @@ function init() {
 			let eyePos = getEyePosition(modelViewMatrix);
 			shipTransform = translate(eyePos[0], eyePos[1]-5, eyePos[2]-30);
 			shipTransform = mult(shipTransform, rotateY(180));
+			shipTransform = mult(shipTransform, rotateZ(tilt));
 			return shipTransform;
 		},
 		material: chrome,
@@ -72,7 +70,7 @@ function init() {
 	}
 
 	const planet1 = {
-		vertices: v=createSphereVertices(30.0, 45, 45), 
+		vertices: v=createSphereVertices(45.0, 45, 45), 
 		vao: setUpVertexObject(v, true),
 		indices: v.indices,
 		transform() {return translate(50.0, 0.0, 500.0)},
@@ -108,19 +106,22 @@ function init() {
 
 function keyHandler(event) {
 	switch (event.key) {
-		case "a": rollLeft(); break;
-		case "d": rollRight(); break;
-		case "w": turnUp(0.1); break;
-		case "s": turnDown(0.1); break;
+		case "a": bankLeft(2); break;
+		case "d": bankRight(2); break;
+		case "w": turnUp(0.05); break;
+		case "s": turnDown(0.05); break;
 	}
 }
 
-function bankLeft(){
-    // rotate around at vector
+let tilt = 0;
+function bankLeft(t){
+	tilt -= t;
+	// update vectors
 }
 
-function bankRight(){
-    // rotate around at vector
+function bankRight(t){
+	tilt += t;
+    // update vectors
 }
 
 function turnUp(t){
