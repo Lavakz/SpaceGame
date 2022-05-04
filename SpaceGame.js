@@ -16,7 +16,7 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(10.0, 200.0, 100.0, 0.0 );
+let lightPosition = vec4(0.0, 0.0, 500.0, 0.0 );
 
 let program;
 let objects;
@@ -72,7 +72,7 @@ function init() {
 		indices: spaceshipMesh.indices,
 		transform() {
 			let eyePos = getEyePosition(modelViewMatrix);
-			shipTransform = translate(eyePos[0], eyePos[1]-5, eyePos[2]-30);
+			let shipTransform = translate(eyePos[0], eyePos[1]-5, eyePos[2]-30);
 			shipTransform = mult(shipTransform, rotateY(180));
 			shipTransform = mult(shipTransform, rotateZ(tilt));
 			return shipTransform;
