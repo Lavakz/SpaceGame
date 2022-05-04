@@ -74,7 +74,7 @@ function init() {
 		transform() {
 			let eyePos = getEyePosition(modelViewMatrix);
 			let shipTransform = translate(eyePos[0], eyePos[1]-5, eyePos[2]-30);
-			shipTransform = mult(shipTransform, rotateX(theta*-10))
+			shipTransform = mult(shipTransform, rotateX(-theta))
 			shipTransform = mult(shipTransform, rotateY(180));
 			shipTransform = mult(shipTransform, rotateZ(tilt));
 			return shipTransform;
@@ -89,7 +89,7 @@ function init() {
 		vao: setUpVertexObject(v, true),
 		indices: v.indices,
 		transform() {return translate(50.0, 0.0, 500.0)},
-		material: chrome
+		material: gold
 	};
 
 	const ring = {
@@ -127,8 +127,8 @@ function keyHandler(event) {
 	switch (event.key) {
 		case "a": bankLeft(); break;
 		case "d": bankRight(); break;
-		case "w": turnUp(0.05); break;
-		case "s": turnDown(0.05); break;
+		case "w": turnUp(1); break;
+		case "s": turnDown(1); break;
 	}
 }
 
@@ -137,7 +137,6 @@ function bankLeft(){
 	let s = Math.sin(0.05);
 	let c = Math.cos(0.05);
 	up = vec3((up[0]*c)-(up[1]*s),(up[0]*s)+(up[1]*c), up[2]);
-	// rotate up around z
 
 }
 
@@ -146,16 +145,13 @@ function bankRight(){
 	let s = Math.sin(-0.05);
 	let c = Math.cos(-0.05);
 	up = vec3((up[0]*c)-(up[1]*s),(up[0]*s)+(up[1]*c), up[2]);
-    // update vectors
 }
 
 function turnUp(t){
 	theta -= t;
-	let s = Math.sin(theta);
-	let c = Math.cos(theta);
-	console.log(theta, s, c);
-    at = vec3(0, s, -c);
-	up = vec3(0, s, -c);
+	//console.log(theta, s, c);
+	at = vec3(0, Math.sin(radians(theta)), -Math.cos(radians(theta)));
+	//up = cross(at, vec3(1,0,0));
 }
 
 function turnDown(t){
