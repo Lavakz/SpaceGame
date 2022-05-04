@@ -28,8 +28,13 @@ let theta = 0.0;
 let tilt = 0.0;
 let delay = 750;
 
-function init() {
+// questions to answer:
+//   - does the rival space ship's speed change (random speed throughout)?
+//   - how does your space ship's speed change?
+//   - can you move around planets and other objects?
+//   - how is the race path determined?
 
+function init() {
 	let canvas = document.getElementById("gl-canvas");
 	let options = {
 		alpha: false,
@@ -67,6 +72,12 @@ function init() {
 		normals: myMesh.vertices[1].values
 	};
 
+	const ringMesh = {
+		vertices: myRingMesh.vertices[0].values,
+		indices: myRingMesh.connectivity[0].indices,
+		normals: myRingMesh.vertices[1].values
+	};
+
 	// Objects
 	const myShip = {
 		vao: setUpVertexObject(spaceshipMesh),
@@ -74,7 +85,7 @@ function init() {
 		transform() {
 			let eyePos = getEyePosition(modelViewMatrix);
 			let shipTransform = translate(eyePos[0], eyePos[1]-5, eyePos[2]-30);
-			shipTransform = mult(shipTransform, rotateX(-theta))
+			shipTransform = mult(shipTransform, rotateX(-theta));
 			shipTransform = mult(shipTransform, rotateY(180));
 			shipTransform = mult(shipTransform, rotateZ(tilt));
 			return shipTransform;
@@ -85,19 +96,25 @@ function init() {
 
 	let v;
 	const planet1 = {
-		vertices: v=createSphereVertices(45.0, 45, 45), 
+		vertices: v=createSphereVertices(45.0, 45.0, 45.0), 
 		vao: setUpVertexObject(v, true),
 		indices: v.indices,
-		transform() {return translate(50.0, 0.0, 500.0)},
+		transform() { return translate(50.0, 0.0, 500.0); },
 		material: gold
 	};
 
 	const ring = {
-		transform() { return translate(-10.0, 0.0, -50.0); },
+		vao: setUpVertexObject(ringMesh),
+		indices: ringMesh.indices,
+		transform() {
+			let ringTransform = mult(scalem(1.2, 1.2, 1.2), rotateY(90));
+			ringTransform = mult(translate(0.0, -3.0, 750.0), ringTransform);
+			return ringTransform;
+		},
 		material: gold
 	};
 
-	objects = [myShip, planet1];
+	objects = [myShip, planet1, ring];
 
 	//Initialize texture
     let image = new Image();
@@ -155,7 +172,7 @@ function turnUp(t){
 }
 
 function turnDown(t){
-    turnUp(-t)
+    turnUp(-t);
 }
 
 function updateTimer() {
@@ -299,7 +316,7 @@ function draw() {
 
 	projectionMatrix = perspective(30.0, gl.canvas.width/gl.canvas.height, near, far);
 	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
-	
+
 	// move eye in at direction
 	eye = vec3(eye[0]+(at[0]/objects[0].speed), 
 			   eye[1]-(at[1]/objects[0].speed), 

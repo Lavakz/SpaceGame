@@ -79,7 +79,8 @@
 	</script>
     <!--   End GLSL 3.0 Shader code -->
 
-    <script type="text/javascript" src="Spaceship.js"></script>
+    <script type="text/javascript" src="objects/Spaceship.js"></script>
+    <script type="text/javascript" src="objects/ring.js"></script>
 
     <script type="text/javascript" src="CS371utils.js"></script>
     <script type="text/javascript" src="SpaceGame.js"></script>
@@ -93,10 +94,10 @@
 
 <body onload="init();">
     <div id="container">
-        <canvas id="gl-canvas" width="1000" height="1000">>
+        <canvas id="gl-canvas" width="750" height="750">>
             Oops ... your browser doesn't support the HTML5 canvas element
         </canvas>
-        <img id = "volcanoPlanetTex" src = "textures/Volcanic1024.png" hidden></img>
+        <img id="volcanoPlanetTex" src="textures/Volcanic1024.png" hidden></img>
         <p id="timer">00:00</p>
     </div>
 </body>
