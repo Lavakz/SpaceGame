@@ -2,12 +2,11 @@ let canvas;
 let gl;
 
 let near = 1;
-let far = 300;
+let far = 1000;
 
 let at = vec3(0.0, 0.0, -1.0);
 let up = vec3(0.0, 1.0, 0.0);
-let eyeX=0, eyeY=0, eyeZ=5;
-let eye;
+let eye = vec3(0, 0, 900);
 
 let uniformModelView, uniformProjection;
 let modelViewMatrix, projectionMatrix;
@@ -15,12 +14,13 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(1.0, 0.0, 0.0, 0.0 );
+let lightPosition = vec4(1.0, 1.0, 1.0, 0.0 );
 
 let program;
 let objects;
 
 let timer;
+let theta = 0.0;
 
 function init() {
 
@@ -36,7 +36,6 @@ function init() {
 	program = initShaders(gl, "vertex-shader", "fragment-shader");
 	gl.useProgram(program);
 
-	eye = vec3(eyeX,eyeY,eyeZ);
     modelViewMatrix = lookAt(eye, at , up); 
 	projectionMatrix = perspective( 30, gl.canvas.width/gl.canvas.height, near, far );
 
@@ -63,8 +62,10 @@ function init() {
 		vao: setUpVertexObject(spaceshipMesh),
 		indices: spaceshipMesh.indices,
 		transform() {
-			let eyePos = getEyePosition(modelViewMatrix) 
-			return translate(eyePos[0], eyePos[1]-5, eyePos[2]-30);
+			let eyePos = getEyePosition(modelViewMatrix);
+			shipTransform = translate(eyePos[0], eyePos[1]-5, eyePos[2]-30);
+			shipTransform = mult(shipTransform, rotateY(180));
+			return shipTransform;
 		},
 		material: chrome,
 		speed: 2
@@ -74,7 +75,7 @@ function init() {
 		vertices: v=createSphereVertices(30.0, 45, 45), 
 		vao: setUpVertexObject(v, true),
 		indices: v.indices,
-		transform() {return translate(50.0, 0.0, -250.0)},
+		transform() {return translate(50.0, 0.0, 500.0)},
 		material: chrome
 	};
 
@@ -122,16 +123,17 @@ function bankRight(){
     // rotate around at vector
 }
 
-function turnUp(theta){
+function turnUp(t){
+	theta -= t;
+	let s = Math.sin(theta);
 	let c = Math.cos(theta);
-	let s = Math.cos(theta);
-    at = normalize(vec3(at[0], // rotate at vector
-				  (at[1]*c)-(at[2]*s), 
-				  (at[1]*s)+(at[2]*c)));
+	console.log(theta, s, c);
+    at = normalize(vec3(0, s, -c));
+	up = normalize(vec3(0, s, -c));
 }
 
-function turnDown(theta){
-    turnUp(-theta)
+function turnDown(t){
+    turnUp(-t)
 }
 
 function updateTimer() {
@@ -275,12 +277,12 @@ function draw() {
 
 	projectionMatrix = perspective(30.0, gl.canvas.width/gl.canvas.height, near, far);
 	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
-
-	let eyePos = getEyePosition(modelViewMatrix) 
-	eyePos = vec3(eyePos[0]+(at[0]/objects[0].speed), // move in at direction
-				  eyePos[1]+(at[1]/objects[0].speed), 
-				  eyePos[2]+(at[2]/objects[0].speed));
-	setEyePosition(modelViewMatrix, eyePos);
+	
+	// move eye in at direction
+	eye = vec3(eye[0]+(at[0]/objects[0].speed), 
+			   eye[1]-(at[1]/objects[0].speed), 
+		       eye[2]+(at[2]/objects[0].speed));
+	modelViewMatrix = lookAt(eye, at , up); 
 
 	objects.forEach((obj) => {
 		gl.uniformMatrix4fv(uniformModelView, false,
