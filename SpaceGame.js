@@ -1,3 +1,5 @@
+"use strict";
+
 let canvas;
 let gl;
 
@@ -14,13 +16,16 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(0.0, 0.0, 600.0, 0.0 );
+let lightPosition = vec4(10.0, 200.0, 100.0, 0.0 );
 
 let program;
 let objects;
 
+let texture;
+
 let timer;
 let theta = 0.0;
+let delay = 750;
 
 function init() {
 
@@ -45,14 +50,21 @@ function init() {
 		diffuse: vec4(0.4, 0.4, 0.4, 1.0),
 		specular: vec4(0.77, 0.77, 0.77, 1.0),
 		shininess: 0.6
-	}
+	};
+
+	const gold = {
+		ambient: vec4(0.24725, 0.1995, 0.0745, 1.0),
+		diffuse: vec4(0.75164, 0.60648, 0.22648, 1.0),
+		specular: vec4(0.628281, 0.555802, 0.366065, 1.0),
+		shininess: 0.4
+	};
 
 	// Shapes
 	const spaceshipMesh = {
 		vertices: myMesh.vertices[0].values,
 		indices: myMesh.connectivity[0].indices,
 		normals: myMesh.vertices[1].values
-	}
+	};
 
 	// Objects
 	const myShip = {
@@ -67,7 +79,9 @@ function init() {
 		},
 		material: chrome,
 		speed: 2
-	}
+	};
+
+	let v;
 
 	const planet1 = {
 		vertices: v=createSphereVertices(45.0, 45, 45), 
@@ -75,6 +89,11 @@ function init() {
 		indices: v.indices,
 		transform() {return translate(50.0, 0.0, 500.0)},
 		material: chrome
+	};
+
+	const ring = {
+		transform() { return translate(-10.0, 0.0, -50.0); },
+		material: gold
 	};
 
 	objects = [myShip, planet1];
@@ -88,8 +107,7 @@ function init() {
 
 	document.onkeydown = function(ev) { keyHandler(ev); };
 
-	timer = document.getElementById("timer").innerHTML;
-	setTimeout(updateTimer, 500);
+	setTimeout(updateTimer, delay);
 
 	//set up screen
 	gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -138,7 +156,7 @@ function turnDown(t){
 }
 
 function updateTimer() {
-	let dt = Date.now() - (Date.now() + 500);
+	let dt = Date.now() - (Date.now() + delay);
 	let timer = document.getElementById("timer");
 	let seconds = timer.innerHTML.substring(3);
 	let minutes = timer.innerHTML.substring(0, 2);
@@ -162,7 +180,7 @@ function updateTimer() {
 	}
 
 	timer.innerHTML = minutes + ":" + seconds;
-	setTimeout(updateTimer, Math.max(0, 500 - dt));
+	setTimeout(updateTimer, Math.max(0, delay - dt));
 }
 
 //Loads a VAO and draws it
@@ -186,7 +204,7 @@ function setUpVertexObject(shape, isTextured) {
 	let vertices = shape.vertices;
 	let normals = shape.normals;
 
-	vao = gl.createVertexArray();
+	let vao = gl.createVertexArray();
 	gl.bindVertexArray(vao);
 
 	//set up index buffer, if using
