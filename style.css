@@ -3,26 +3,89 @@
  src: url('fonts/alarmclock.ttf') format("truetype");
 }
 
+body {
+    background-color: black;
+    background-image: url("/images/background.avif");
+    background-repeat: none;
+    display: flex;
+    align-items: center;
+}
+
+h1 {
+    margin-top: 10px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+}
+
+#instructions {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    background-color: black;
+    color: white;
+    width: 120px;
+    height: 350px;
+    margin: 0 auto;
+    padding: 10px 5px;
+}
+
+#instructions p {
+    font-size: 18px;
+    text-align: center;
+    font-weight: bold;
+}
+
 #container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 70%;
+    margin: 0 auto;
+}
+
+#second-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+#second-container div {
+    margin: 0 30px;
+}
+
+#canvas-timer {
+    flex: 1;
+    display: flex;
     position: relative;
 }
 
 #gl-canvas {
-    margin-right: 5px;
     z-index: 0;
+}
+
+#timer, #finish {
+    z-index: 1;
+    margin: 0;
     position: absolute;
-    left: 0;
-    top: 0;
 }
 
 #timer {
-    z-index: 1;
     color: red;
-    position: absolute;
-    left: 0;
-    top: 0;
-    margin-top: 0;
+    width: 90px;
+    height: 30px;
     padding: 10px 10px;
-    font-size: 30px;
+    font-size: 32px;
     font-family: 'digital-clock-font', cursive;
+}
+
+#finish {
+    color: white;
+    left: 14%;
+    top: 40%;
+    height: 100px;
+    font-size: 100px;
+    text-transform: uppercase;
+    text-align: center;
+    font-family: monospace;
 }

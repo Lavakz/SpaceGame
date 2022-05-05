@@ -93,12 +93,26 @@
 </head>
 
 <body onload="init();">
+
+
     <div id="container">
-        <canvas id="gl-canvas" width="750" height="750">>
-            Oops ... your browser doesn't support the HTML5 canvas element
-        </canvas>
+        <h1>Space Race</h1>
+        <div id="second-container">
+            <div id="instructions">
+                <p>w: tilt up</p>
+                <p>a: tilt left</p>
+                <p>s: tilt down</p>
+                <p>d: tilt right</p>
+            </div>
+            <div id="canvas-timer">
+                <p id="timer">00:00</p>
+                <canvas id="gl-canvas" width="650" height="650">
+                    Oops ... your browser doesn't support the HTML5 canvas element
+                </canvas>
+                <p id="finish" hidden>Finished</p>
+            </div>
+        </div>
         <img id="volcanoPlanetTex" src="textures/Volcanic1024.png" hidden></img>
-        <p id="timer">00:00</p>
     </div>
 </body>
 
