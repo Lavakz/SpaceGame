@@ -25,7 +25,7 @@ let texture;
 
 let timer;
 let theta = 0.0;
-let tilt = 0.0;
+let tiltDegrees = 0.0;
 let delay = 750;
 
 // questions to answer:
@@ -84,10 +84,10 @@ function init() {
 		indices: spaceshipMesh.indices,
 		transform() {
 			let eyePos = getEyePosition(modelViewMatrix);
-			let shipTransform = translate(eyePos[0], eyePos[1]-5, eyePos[2]-30);
-			shipTransform = mult(shipTransform, rotateX(-theta));
+			let shipTransform = rotateZ(tiltDegrees);
+			shipTransform = mult(shipTransform, translate(eyePos[0], eyePos[1]-5, eyePos[2]-30));
+			shipTransform = mult(shipTransform, rotate(theta, cross(up, at)));
 			shipTransform = mult(shipTransform, rotateY(180));
-			shipTransform = mult(shipTransform, rotateZ(tilt));
 			return shipTransform;
 		},
 		material: chrome,
@@ -142,33 +142,24 @@ function init() {
 
 function keyHandler(event) {
 	switch (event.key) {
-		case "a": bankLeft(); break;
-		case "d": bankRight(); break;
+		case "a": tilt(-5); break;
+		case "d": tilt(5); break;
 		case "w": turnUp(1); break;
 		case "s": turnDown(1); break;
 	}
 }
 
-function bankLeft(){
-	tilt -= 2.5;
-	let s = Math.sin(0.05);
-	let c = Math.cos(0.05);
-	up = vec3((up[0]*c)-(up[1]*s),(up[0]*s)+(up[1]*c), up[2]);
-
-}
-
-function bankRight(){
-	tilt += 2.5;
-	let s = Math.sin(-0.05);
-	let c = Math.cos(-0.05);
-	up = vec3((up[0]*c)-(up[1]*s),(up[0]*s)+(up[1]*c), up[2]);
+function tilt(degrees){
+	tiltDegrees -= degrees;
+	up = vec3(-Math.sin(radians(tiltDegrees)),
+			   Math.cos(radians(tiltDegrees)), 
+			   up[2]);
 }
 
 function turnUp(t){
 	theta -= t;
-	//console.log(theta, s, c);
-	at = vec3(0, Math.sin(radians(theta)), -Math.cos(radians(theta)));
-	//up = cross(at, vec3(1,0,0));
+	let global = vec3(0, Math.sin(radians(theta)), -Math.cos(radians(theta)));
+	at = multM3V3(modelViewMatrix, global);
 }
 
 function turnDown(t){
@@ -318,10 +309,8 @@ function draw() {
 	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
 
 	// move eye in at direction
-	eye = vec3(eye[0]+(at[0]/objects[0].speed), 
-			   eye[1]-(at[1]/objects[0].speed), 
-		       eye[2]+(at[2]/objects[0].speed));
-	modelViewMatrix = lookAt(eye, at , up); 
+	eye = add(eye, vec3(at[0], -at[1], at[2]));
+	modelViewMatrix = lookAt(eye, at , up);      
 
 	objects.forEach((obj) => {
 		gl.uniformMatrix4fv(uniformModelView, false,
