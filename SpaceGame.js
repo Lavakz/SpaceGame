@@ -25,6 +25,7 @@ let texture;
 
 let timer;
 let theta = 0.0;
+let direction = vec3(0, 0, -1);
 let tiltDegrees = 0.0;
 let delay = 750;
 
@@ -84,9 +85,10 @@ function init() {
 		indices: spaceshipMesh.indices,
 		transform() {
 			let eyePos = getEyePosition(modelViewMatrix);
-			let shipTransform = rotateZ(tiltDegrees);
-			shipTransform = mult(shipTransform, translate(eyePos[0], eyePos[1]-5, eyePos[2]-30));
-			shipTransform = mult(shipTransform, rotate(theta, cross(up, at)));
+			let shipTransform = translate(eyePos[0], eyePos[1]-5, eyePos[2]-30);
+			shipTransform = mult(shipTransform, rotateZ(tiltDegrees));
+			shipTransform = mult(shipTransform, translate(0, -5, -20));
+			shipTransform = mult(shipTransform, rotateX(-theta));
 			shipTransform = mult(shipTransform, rotateY(180));
 			return shipTransform;
 		},
@@ -144,8 +146,8 @@ function keyHandler(event) {
 	switch (event.key) {
 		case "a": tilt(-5); break;
 		case "d": tilt(5); break;
-		case "w": turnUp(1); break;
-		case "s": turnDown(1); break;
+		case "w": turn(2); break;
+		case "s": turn(-2); break;
 	}
 }
 
@@ -154,16 +156,14 @@ function tilt(degrees){
 	up = vec3(-Math.sin(radians(tiltDegrees)),
 			   Math.cos(radians(tiltDegrees)), 
 			   up[2]);
+	turn(0)//update direction
 }
 
-function turnUp(t){
+function turn(t){
 	theta -= t;
-	let global = vec3(0, Math.sin(radians(theta)), -Math.cos(radians(theta)));
-	at = multM3V3(modelViewMatrix, global);
-}
-
-function turnDown(t){
-    turnUp(-t);
+	direction = multM3V3(modelViewMatrix, vec3(0, 
+						Math.sin(radians(theta)), 
+						-Math.cos(radians(theta))));
 }
 
 function updateTimer() {
@@ -308,8 +308,9 @@ function draw() {
 	projectionMatrix = perspective(30.0, gl.canvas.width/gl.canvas.height, near, far);
 	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
 
-	// move eye in at direction
-	eye = add(eye, vec3(at[0], -at[1], at[2]));
+	// move eye in direction
+	eye = add(eye, vec3(direction[0], -direction[1], direction[2]));
+
 	modelViewMatrix = lookAt(eye, at , up);      
 
 	objects.forEach((obj) => {
