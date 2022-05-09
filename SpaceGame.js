@@ -23,14 +23,15 @@ let objects;
 
 let texture;
 
-let timer;
 let theta = 0.0;
 let tilt = 0.0;
+
+let timer;
 let delay = 750;
 
 // questions to answer:
-//   - does the rival space ship's speed change (random speed throughout)?
-//   - how does your space ship's speed change?
+//   - does the rival spaceship's speed change (random speed throughout)?
+//   - how does your spaceship's speed change?
 //   - can you move around planets and other objects?
 //   - how is the race path determined?
 
