@@ -6,9 +6,9 @@ let gl;
 let near = 1;
 let far = 1000;
 
-let at = vec3(0.0, 0.0, -1000.0);
+let at = vec3(0.0, 0.0, -2000.0);
 let up = vec3(0.0, 1.0, 0.0);
-let eye = vec3(0, 0, 1000);
+let eye = vec3(0, 0, 2000);
 
 let uniformModelView, uniformProjection;
 let modelViewMatrix, projectionMatrix;
@@ -85,9 +85,9 @@ function init() {
 		indices: spaceshipMesh.indices,
 		transform() {
 			let eyePos = getEyePosition(modelViewMatrix);
-			let shipTransform = translate(eyePos[0], eyePos[1] - 5, eyePos[2] - 30);
+			let shipTransform = translate(eyePos[0], eyePos[1], eyePos[2]);
 			shipTransform = mult(shipTransform, rotateZ(tiltDegrees));
-			shipTransform = mult(shipTransform, translate(0, -5, -20));
+			shipTransform = mult(shipTransform, translate(0, -7, -40));
 			shipTransform = mult(shipTransform, rotateX(-theta));
 			shipTransform = mult(shipTransform, rotateY(180));
 			return shipTransform;
@@ -102,7 +102,7 @@ function init() {
 		vertices: v = createSphereVertices(60.0, 45.0, 45.0),
 		vao: setUpVertexObject(v, true),
 		indices: v.indices,
-		transform() { return translate(50.0, 0.0, 200.0); },
+		transform() { return translate(100.0, 0.0, 1000.0); },
 		material: gold,
 		textured: 0.0
 	};
@@ -112,7 +112,7 @@ function init() {
 		indices: ringMesh.indices,
 		transform() {
 			let ringTransform = mult(scalem(1.2, 1.2, 1.2), rotateY(90));
-			ringTransform = mult(translate(0.0, -3.0, 750.0), ringTransform);
+			ringTransform = mult(translate(0.0, -3.0, 1750.0), ringTransform);
 			return ringTransform;
 		},
 		material: gold,
@@ -130,7 +130,8 @@ function init() {
 		configureTexture(image, program);
 	}
 
-	document.onkeydown = function (ev) { keyHandler(ev); };
+	document.onkeydown = function (ev) { keyHandler(ev, true); };
+	document.onkeyup = function (ev) { keyHandler(ev, false); };
 
 	setTimeout(updateTimer, delay);
 
@@ -147,12 +148,13 @@ function init() {
 	draw();
 }
 
-function keyHandler(event) {
+let input = [0,0] 
+function keyHandler(event, isDown) {
 	switch (event.key) {
-		case "a": tilt(-5); break;
-		case "d": tilt(5); break;
-		case "w": turn(2); break;
-		case "s": turn(-2); break;
+		case "w": input[0] = (isDown ? 1 : 0); break;
+		case "s": input[0] = (isDown ? -1 : 0); break;
+		case "d": input[1] = (isDown ? 1 : 0); break;
+		case "a": input[1] = (isDown ? -1 : 0); break;
 	}
 }
 
@@ -233,7 +235,15 @@ function draw() {
 	gl.uniformMatrix4fv(uniformProjection, false, flatten(projectionMatrix));
 
 	// move eye in direction
-	eye = add(eye, vec3(direction[0], -direction[1], direction[2]));
+	eye = add(eye, vec3(direction[0]*objects[0].speed, 
+						-direction[1]*objects[0].speed, 
+						direction[2]*objects[0].speed));
+
+	// make move according to input[]
+	if (input[0] == 1) {turn(2);}
+	else if (input[0] == -1) {turn(-2);}
+	if (input[1] == 1) {tilt(3);}
+	else if (input[1] == -1) {tilt(-3);}
 
 	modelViewMatrix = lookAt(eye, at, up);
 
