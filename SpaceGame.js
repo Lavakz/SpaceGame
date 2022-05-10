@@ -6,9 +6,9 @@ let gl;
 let near = 1;
 let far = 1000;
 
-let at = vec3(0.0, 0.0, -1.0);
+let at = vec3(0.0, 0.0, -1000.0);
 let up = vec3(0.0, 1.0, 0.0);
-let eye = vec3(0, 0, 900);
+let eye = vec3(0, 0, 1000);
 
 let uniformModelView, uniformProjection;
 let modelViewMatrix, projectionMatrix;
@@ -16,7 +16,7 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(0.0, 0.0, 500.0, 0.0 );
+let lightPosition = vec4(0.0, 0.0, 1000.0, 0.0 );
 
 let program;
 let objects;
@@ -93,16 +93,18 @@ function init() {
 			return shipTransform;
 		},
 		material: chrome,
+		textured: -1.0,
 		speed: 2
 	};
 
 	let v;
 	const planet1 = {
-		vertices: v=createSphereVertices(45.0, 45.0, 45.0), 
+		vertices: v=createSphereVertices(60.0, 45.0, 45.0), 
 		vao: setUpVertexObject(v, true),
 		indices: v.indices,
-		transform() { return translate(50.0, 0.0, 500.0); },
-		material: gold
+		transform() { return translate(50.0, 0.0, 200.0); },
+		material: gold,
+		textured: 0.0
 	};
 
 	const ring = {
@@ -113,7 +115,8 @@ function init() {
 			ringTransform = mult(translate(0.0, -3.0, 750.0), ringTransform);
 			return ringTransform;
 		},
-		material: gold
+		material: gold,
+		textured: -1.0
 	};
 
 	objects = [myShip, planet1, ring];
@@ -206,6 +209,9 @@ function draw() {
 	modelViewMatrix = lookAt(eye, at , up);      
 
 	objects.forEach((obj) => {
+		gl.uniform1f(gl.getUniformLocation(program, "textured"), obj.textured);
+		if (obj.textured != -1.0)
+			gl.uniform1i(gl.getUniformLocation(program, "u_textureMap"), obj.textured);
 		gl.uniformMatrix4fv(uniformModelView, false,
 			flatten(mult(modelViewMatrix, obj.transform())));
 		drawVertexObject(obj.vao,

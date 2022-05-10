@@ -101,7 +101,4 @@ function configureTexture( image, program ) {
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    
-    //Link texture to a sampler in fragment shader
-    gl.uniform1i(gl.getUniformLocation(program, "u_textureMap"), 0);
 }
