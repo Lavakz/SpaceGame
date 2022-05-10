@@ -71,10 +71,15 @@
         in vec2 v_texCoord;
         in vec4 v_color;
 		out vec4 f_color;
+
         uniform sampler2D u_textureMap;
+        uniform float textured;
 
 		void main() {
-            f_color = v_color * texture(u_textureMap, v_texCoord);
+            if (textured >= 0.0) 
+                f_color = v_color * texture(u_textureMap, v_texCoord);
+            else 
+                f_color = v_color;
 		}
 	</script>
     <!--   End GLSL 3.0 Shader code -->
