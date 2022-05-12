@@ -12,10 +12,14 @@ body {
 }
 
 h1 {
-    margin-top: 10px;
+    margin: 5px 0;
+    padding: 5px;
     text-align: center;
-    color: white;
     font-weight: bold;
+    font-family: monospace;
+    font-size: 50px;
+    background-color: black;
+    color: white;
 }
 
 #instructions {
@@ -72,8 +76,6 @@ h1 {
 
 #timer {
     color: red;
-    width: 90px;
-    height: 30px;
     padding: 10px 10px;
     font-size: 32px;
     font-family: 'digital-clock-font', cursive;
@@ -83,21 +85,28 @@ h1 {
     color: white;
     left: 10.5%;
     top: 30%;
-    height: 100px;
     font-size: 100px;
     text-transform: uppercase;
     text-align: center;
     font-family: monospace;
 }
 
-#rules {
+#rules-container {
+    position: absolute;
+    left: -30px;
+    top: 0;
+    height: 650px;
+    width: 650px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#rules-container #rules {
     background-color: black;
-    padding-top: 8px;
+    padding: 20px;
     color: white;
-    left: 9%;
-    top: 35%;
-    height: 170px;
-    width: 500px;
+    width: 530px;
     font-size: 25px;
     font-weight: bold;
     line-height: 1.3em;
@@ -109,7 +118,6 @@ h1 {
     color: white;
     left: 30%;
     top: 50%;
-    height: 50px;
     font-size: 25px;
     font-weight: bold;
     text-align: center;
