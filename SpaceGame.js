@@ -4,11 +4,10 @@ let canvas;
 let gl;
 
 let near = 1;
-let far = 1000;
+let far = 2000;
 
-let at = vec3(0.0, 0.0, -2000.0);
+let eye = vec3(0, 0, 0);
 let up = vec3(0.0, 1.0, 0.0);
-let eye = vec3(0, 0, 2000);
 
 let uniformModelView, uniformProjection;
 let modelViewMatrix, projectionMatrix;
@@ -16,7 +15,7 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(0.0, 0.0, 1000.0, 0.0);
+let lightPosition = vec4(-1000.0, 0.0, 0.0, 0.0);
 
 let program;
 let objects;
@@ -104,10 +103,22 @@ function init() {
 					let eyePos = getEyePosition(modelViewMatrix);
 					let shipTransform = translate(eyePos[0], eyePos[1], eyePos[2]);
 					shipTransform = mult(shipTransform, rotateZ(tiltDegrees));
-					shipTransform = mult(shipTransform, translate(0, -7, -40));
+					shipTransform = mult(shipTransform, translate(0, -5, -40));
 					shipTransform = mult(shipTransform, rotateX(-theta));
 					shipTransform = mult(shipTransform, rotateY(180));
 					return shipTransform;
+				},
+				material: chrome,
+				textured: -1.0,
+				speed: 3
+			};
+
+			const rival = {
+				vao: setUpVertexObject(spaceshipMesh),
+				indices: spaceshipMesh.indices,
+				transform() {
+					let rivalTransform = translate(3, 0, -250);
+					return rivalTransform;
 				},
 				material: chrome,
 				textured: -1.0,
@@ -116,10 +127,10 @@ function init() {
 
 			let v;
 			const planet1 = {
-				vertices: v = createSphereVertices(60.0, 45.0, 45.0),
+				vertices: v = createSphereVertices(170.0, 45.0, 45.0),
 				vao: setUpVertexObject(v, true),
 				indices: v.indices,
-				transform() { return translate(100.0, 0.0, 1000.0); },
+				transform() { return translate(300.0, 200.0, -1300); },
 				material: gold,
 				textured: 0.0
 			};
@@ -129,14 +140,14 @@ function init() {
 				indices: ringMesh.indices,
 				transform() {
 					let ringTransform = mult(scalem(2, 2, 2), rotateY(90));
-					ringTransform = mult(translate(0.0, -3.0, 1750.0), ringTransform);
+					ringTransform = mult(translate(0.0, -3.0, -500.0), ringTransform);
 					return ringTransform;
 				},
 				material: gold,
 				textured: -1.0
 			};
 
-			objects = [myShip, planet1, ring];
+			objects = [myShip, rival, planet1, ring];
 
 			allRings.push(ring);
 			determineRacePath(ring);
@@ -328,7 +339,7 @@ function draw() {
 	if (input[1] == 1) { tilt(3); }
 	else if (input[1] == -1) { tilt(-3); }
 
-	modelViewMatrix = lookAt(eye, at, up);
+	modelViewMatrix = lookAtGT(eye, vec3(0,0,1), up);//modified lookAT to remove at
 
 	objects.forEach((obj) => {
 		gl.uniform1f(gl.getUniformLocation(program, "textured"), obj.textured);

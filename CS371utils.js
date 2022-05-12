@@ -441,13 +441,13 @@ function scalem( x, y, z )
 //
 //  ModelView Matrix Generators
 //
-function lookAtGT( eye, at, up )
+function lookAtGT( eye, n, up )
 {
     if ( !Array.isArray(eye) || eye.length != 3) {
         throw "lookAt(): first parameter [eye] must be an a vec3";
     }
 
-    if ( !Array.isArray(at) || at.length != 3) {
+    if ( !Array.isArray(n) || n.length != 3) {
         throw "lookAt(): first parameter [at] must be an a vec3";
     }
 
@@ -455,11 +455,11 @@ function lookAtGT( eye, at, up )
         throw "lookAt(): first parameter [up] must be an a vec3";
     }
 
-    if ( equal(eye, at) ) {
+    if ( equal(eye, n) ) {
         return mat4();
     }
 
-    var n = normalize( subtract(eye, at) );  // view direction vector, n corresponds to z
+    var n = normalize( n );  // view direction vector, n corresponds to z
     var u = normalize( cross(up, n) );       // perpendicular vector, u corresponds to x
     var v = normalize( cross(n, u) );        // "new" up vector, v corresponds to y
 
