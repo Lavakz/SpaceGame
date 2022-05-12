@@ -38,6 +38,7 @@ function drawVertexObject(vao, iLength, mA, mD, mS, s) {
 	gl.uniform4fv(gl.getUniformLocation(program, "diffuseProduct"), flatten(diffuseProduct));
 	gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), flatten(specularProduct));
 	gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition));
+	gl.uniform4fv(gl.getUniformLocation(program, "thrusterPosition"), flatten(thrusterPosition));
 
 	gl.bindVertexArray(vao);
 	gl.drawElements(gl.TRIANGLES, iLength, gl.UNSIGNED_SHORT, 0);

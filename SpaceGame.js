@@ -16,6 +16,7 @@ let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 let lightPosition = vec4(-1000.0, 0.0, 0.0, 0.0);
+let thrusterPosition = vec4(0.0, 0.0, 0.0, 0.0);
 
 let program;
 let objects;
@@ -105,6 +106,7 @@ function init() {
 				transform() {
 					let eyePos = getEyePosition(modelViewMatrix);
 					let shipTransform = translate(eyePos[0], eyePos[1], eyePos[2]);
+					thrusterPosition = vec4(eyePos[0], eyePos[1]-5, eyePos[2]-30, 0.0);
 					shipTransform = mult(shipTransform, rotateZ(tiltDegrees));
 					shipTransform = mult(shipTransform, translate(0, -5, -40));
 					shipTransform = mult(shipTransform, rotateX(-theta));
@@ -180,7 +182,7 @@ function init() {
 								rivalTransform[2][3]);
 							target[0] += (Math.random() * 10) - 5;
 							target[1] += (Math.random() * 10) - 5;
-							rivalDirection = scale(2.0, normalize(subtract(target, position)));
+							rivalDirection = scale(1.5, normalize(subtract(target, position)));
 						} else {
 							endGame = true;
 							userWon = false;
