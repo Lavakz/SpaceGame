@@ -6,7 +6,7 @@ let gl;
 let near = 1;
 let far = 2000;
 
-let eye = vec3(0, 0, 0);
+let eye = vec3(2, 2, 2);
 let up = vec3(0.0, 1.0, 0.0);
 
 let uniformModelView, uniformProjection;
@@ -29,10 +29,46 @@ let tiltDegrees = 0.0;
 let timer;
 let delay = 750;
 
+let difficulty = 100;
+
 let allRings = [];
 let currentRingIndex = -1;
 
 let endGame = false;
+
+// Materials
+const chrome = {
+	ambient: vec4(0.25, 0.25, 0.25, 1.0),
+	diffuse: vec4(0.4, 0.4, 0.4, 1.0),
+	specular: vec4(0.77, 0.77, 0.77, 1.0),
+	shininess: 0.6
+};
+
+const gold = {
+	ambient: vec4(0.24725, 0.1995, 0.0745, 1.0),
+	diffuse: vec4(0.75164, 0.60648, 0.22648, 1.0),
+	specular: vec4(0.628281, 0.555802, 0.366065, 1.0),
+	shininess: 0.4
+};
+
+// Shapes
+const spaceshipMesh = {
+	vertices: myMesh.vertices[0].values,
+	indices: myMesh.connectivity[0].indices,
+	normals: myMesh.vertices[1].values
+};
+
+const ringMesh = {
+	vertices: myRingMesh.vertices[0].values,
+	indices: myRingMesh.connectivity[0].indices,
+	normals: myRingMesh.vertices[1].values
+};
+
+const finishLineMesh = {
+	// vertices,
+	// indices,
+	// normals
+};
 
 // questions to answer:
 //   - does the rival spaceship's speed change (random speed throughout)?
@@ -61,40 +97,6 @@ function init() {
 			uniformModelView = gl.getUniformLocation(program, "u_modelViewMatrix");
 			uniformProjection = gl.getUniformLocation(program, "u_projectionMatrix");
 
-			// Materials
-			const chrome = {
-				ambient: vec4(0.25, 0.25, 0.25, 1.0),
-				diffuse: vec4(0.4, 0.4, 0.4, 1.0),
-				specular: vec4(0.77, 0.77, 0.77, 1.0),
-				shininess: 0.6
-			};
-
-			const gold = {
-				ambient: vec4(0.24725, 0.1995, 0.0745, 1.0),
-				diffuse: vec4(0.75164, 0.60648, 0.22648, 1.0),
-				specular: vec4(0.628281, 0.555802, 0.366065, 1.0),
-				shininess: 0.4
-			};
-
-			// Shapes
-			const spaceshipMesh = {
-				vertices: myMesh.vertices[0].values,
-				indices: myMesh.connectivity[0].indices,
-				normals: myMesh.vertices[1].values
-			};
-
-			const ringMesh = {
-				vertices: myRingMesh.vertices[0].values,
-				indices: myRingMesh.connectivity[0].indices,
-				normals: myRingMesh.vertices[1].values
-			};
-
-			const finishLineMesh = {
-				// vertices,
-				// indices,
-				// normals
-			};
-
 			// Objects
 			const myShip = {
 				vao: setUpVertexObject(spaceshipMesh),
@@ -110,19 +112,7 @@ function init() {
 				},
 				material: chrome,
 				textured: -1.0,
-				speed: 3
-			};
-
-			const rival = {
-				vao: setUpVertexObject(spaceshipMesh),
-				indices: spaceshipMesh.indices,
-				transform() {
-					let rivalTransform = translate(3, 0, -250);
-					return rivalTransform;
-				},
-				material: chrome,
-				textured: -1.0,
-				speed: 2
+				speed: 2.0
 			};
 
 			let v;
@@ -146,12 +136,8 @@ function init() {
 				material: gold,
 				textured: -1.0
 			};
-
-			objects = [myShip, rival, planet1, ring];
-
 			allRings.push(ring);
-			determineRacePath(ring);
-
+			
 			const finishLine = {
 				// vao,
 				// indices,
@@ -169,6 +155,37 @@ function init() {
 				material: gold,
 				textured: -1.0	// textured with finish-line texture
 			};
+
+			let rivalTransform = translate(10, 0, -250);
+			let rivalDirection = vec3(0, 0, -1);
+			let rivalRingNum = 0;
+			const rival = {
+				vao: setUpVertexObject(spaceshipMesh),
+				indices: spaceshipMesh.indices,
+				transform() {
+					rivalTransform = mult(rivalTransform, translate(rivalDirection));
+					if (hasCollided(rivalTransform, allRings[rivalRingNum].transform())){
+						rivalRingNum++;
+						let targetTransform = allRings[rivalRingNum].transform();
+						let target = vec3(targetTransform[0][3], 
+									  targetTransform[1][3], 
+								  	  targetTransform[2][3]);
+						let position = vec3(rivalTransform[0][3], 
+										rivalTransform[1][3], 
+										rivalTransform[2][3]);
+						target[0] += (Math.random() * 10) - 5;
+						target[1] += (Math.random() * 10) - 5;
+						rivalDirection = scale(2.0, normalize(subtract(target, position)));
+					}
+					//rivalTransform = mult(rivalTransform, rotateY(180));
+					return rivalTransform;
+				},
+				material: chrome,
+				textured: -1.0,
+			};
+
+			objects = [myShip, rival, planet1];
+			determineRacePath(ring);
 
 			// Initialize textures
 			let planetImage = new Image();
@@ -233,8 +250,8 @@ function determineRacePath(ringObject) {
 	let lastRing = allRings[0];
 	for (let count = 0; count < 19; count++) {	// path of 20 rings
 		let previousTransformation = lastRing.transform();
-		let newX = previousTransformation[0][3] + (Math.random() * 50);
-		let newY = previousTransformation[0][3] + (Math.random() * 50);
+		let newX = previousTransformation[0][3] + (Math.random() * difficulty);
+		let newY = previousTransformation[0][3] + (Math.random() * difficulty);
 		let newZ = previousTransformation[2][3] - 500;
 
 		let newRing = {
@@ -262,6 +279,7 @@ function checkIfInRing() {
 
 	if (hasCollided(shipTransform, ringTransform)) {
 		currentRingIndex++;
+		allRings[currentRingIndex + 1].material = chrome;
 	}
 }
 
@@ -339,7 +357,7 @@ function draw() {
 	if (input[1] == 1) { tilt(3); }
 	else if (input[1] == -1) { tilt(-3); }
 
-	modelViewMatrix = lookAtGT(eye, vec3(0,0,1), up);//modified lookAT to remove at
+	modelViewMatrix = lookAtGT(eye, vec3(0,0,1), up);//modified lookAtGT to remove at
 
 	objects.forEach((obj) => {
 		gl.uniform1f(gl.getUniformLocation(program, "textured"), obj.textured);
