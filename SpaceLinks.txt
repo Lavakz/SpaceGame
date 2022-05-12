@@ -3,6 +3,8 @@ Textures:
 https://polyhaven.com/
 https://www.texturesforplanets.com/texture-packs.shtml
 
+https://stock.adobe.com/search?k=finish+line+banner
+
 Mesh:
 https://www.reddit.com/r/gamedev/comments/7qymqo/free_lowpoly_spaceships/
 https://people.sc.fsu.edu/~jburkardt/data/obj/obj.html

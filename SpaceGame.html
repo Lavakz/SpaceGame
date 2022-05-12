@@ -109,15 +109,23 @@
                 <p>d: tilt right</p>
             </div>
             <div id="canvas-timer">
-                <p id="timer">00:00</p>
+                <p id="timer" hidden>00:00</p>
                 <canvas id="gl-canvas" width="650" height="650">
                     Oops ... your browser doesn't support the HTML5 canvas element
                 </canvas>
                 <p id="finish" hidden>Finished</p>
+                <p id="user-time" hidden></p>
+                <p id="rules">
+                    Go through all the rings and cross the finish line
+                    before the rival ship!
+                    <br>
+                    <br>
+                    (press space to start)
+                </p>
             </div>
         </div>
-        <img id="volcanoPlanetTex" src="textures/Volcanic1024.png" hidden></img>
+        <img id="volcanoPlanetTex" src="textures/Volcanic1024.png" hidden>
+        <img id="finishLineTex" src="textures/finish-line.jpg" hidden>
     </div>
 </body>
-
 </html>
