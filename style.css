@@ -1,6 +1,6 @@
 @font-face{
- font-family:'digital-clock-font';
- src: url('fonts/alarmclock.ttf') format("truetype");
+    font-family:'digital clock font';
+    src: url('fonts/alarmclock.ttf') format("truetype");
 }
 
 body {
@@ -9,14 +9,13 @@ body {
     background-repeat: none;
     display: flex;
     align-items: center;
+    font-family: 'Space Mono', monospace;
 }
 
 h1 {
     margin: 5px 0;
     padding: 5px;
     text-align: center;
-    font-weight: bold;
-    font-family: monospace;
     font-size: 50px;
     background-color: black;
     color: white;
@@ -28,14 +27,14 @@ h1 {
     justify-content: space-around;
     background-color: black;
     color: white;
-    width: 120px;
+    width: 150px;
     height: 350px;
     margin: 0 auto;
     padding: 10px 5px;
 }
 
 #instructions p {
-    font-size: 18px;
+    font-size: 17px;
     text-align: center;
     font-weight: bold;
 }
@@ -68,7 +67,7 @@ h1 {
     z-index: 0;
 }
 
-#timer, #finish, #rules, #user-time {
+#timer {
     z-index: 1;
     margin: 0;
     position: absolute;
@@ -78,34 +77,50 @@ h1 {
     color: red;
     padding: 10px 10px;
     font-size: 32px;
-    font-family: 'digital-clock-font', cursive;
+    font-family: 'digital clock font', cursive;
+}
+
+#layered-content, #rules-container {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    margin: 0;
+    position: absolute;
+    height: 650px;
+    width: 650px;
+    align-items: center;
+    top: 0;
+    left: -30px;
+}
+
+#layered-content {
+    justify-content: center;
+}
+
+#layered-content p {
+    margin: 0;
+}
+
+#who-won {
+    text-transform: uppercase;
+    text-align: center;
+    font-size: 30px;
 }
 
 #finish {
-    color: white;
-    left: 10.5%;
-    top: 30%;
     font-size: 100px;
     text-transform: uppercase;
     text-align: center;
-    font-family: monospace;
 }
 
 #rules-container {
-    position: absolute;
-    left: -30px;
-    top: 0;
-    height: 650px;
-    width: 650px;
-    display: flex;
     justify-content: center;
-    align-items: center;
 }
 
 #rules-container #rules {
     background-color: black;
     padding: 20px;
-    color: white;
     width: 530px;
     font-size: 25px;
     font-weight: bold;
@@ -115,9 +130,6 @@ h1 {
 }
 
 #user-time {
-    color: white;
-    left: 30%;
-    top: 50%;
     font-size: 25px;
     font-weight: bold;
     text-align: center;

@@ -35,9 +35,10 @@ let allRings = [];
 let currentRingIndex = -1;
 
 let endGame = false;
+let userWon;
 
 // Materials
-const chrome = {
+const chromeMaterial = {
 	ambient: vec4(0.25, 0.25, 0.25, 1.0),
 	diffuse: vec4(0.4, 0.4, 0.4, 1.0),
 	specular: vec4(0.77, 0.77, 0.77, 1.0),
@@ -78,7 +79,7 @@ const finishLineMesh = {
 
 function init() {
 	document.onkeydown = function (ev) {
-		if (ev.keycode = 32) {
+		if (ev.code === "Space") {
 			document.getElementById("rules").hidden = true;
 			document.getElementById("timer").hidden = false;
 
@@ -110,7 +111,7 @@ function init() {
 					shipTransform = mult(shipTransform, rotateY(180));
 					return shipTransform;
 				},
-				material: chrome,
+				material: chromeMaterial,
 				textured: -1.0,
 				speed: 2.0
 			};
@@ -137,7 +138,7 @@ function init() {
 				textured: -1.0
 			};
 			allRings.push(ring);
-			
+
 			const finishLine = {
 				// vao,
 				// indices,
@@ -156,6 +157,9 @@ function init() {
 				textured: -1.0	// textured with finish-line texture
 			};
 
+			objects = [myShip, planet1, ring];
+			determineRacePath(ring);
+
 			let rivalTransform = translate(10, 0, -250);
 			let rivalDirection = vec3(0, 0, -1);
 			let rivalRingNum = 0;
@@ -164,28 +168,32 @@ function init() {
 				indices: spaceshipMesh.indices,
 				transform() {
 					rivalTransform = mult(rivalTransform, translate(rivalDirection));
-					if (hasCollided(rivalTransform, allRings[rivalRingNum].transform())){
-						rivalRingNum++;
-						let targetTransform = allRings[rivalRingNum].transform();
-						let target = vec3(targetTransform[0][3], 
-									  targetTransform[1][3], 
-								  	  targetTransform[2][3]);
-						let position = vec3(rivalTransform[0][3], 
-										rivalTransform[1][3], 
-										rivalTransform[2][3]);
-						target[0] += (Math.random() * 10) - 5;
-						target[1] += (Math.random() * 10) - 5;
-						rivalDirection = scale(2.0, normalize(subtract(target, position)));
+					if (hasCollided(rivalTransform, allRings[rivalRingNum].transform())) {
+						if (rivalRingNum !== 19) {
+							rivalRingNum++;
+							let targetTransform = allRings[rivalRingNum].transform();
+							let target = vec3(targetTransform[0][3],
+								targetTransform[1][3],
+								targetTransform[2][3]);
+							let position = vec3(rivalTransform[0][3],
+								rivalTransform[1][3],
+								rivalTransform[2][3]);
+							target[0] += (Math.random() * 10) - 5;
+							target[1] += (Math.random() * 10) - 5;
+							rivalDirection = scale(2.0, normalize(subtract(target, position)));
+						} else {
+							endGame = true;
+							userWon = false;
+						}
 					}
 					//rivalTransform = mult(rivalTransform, rotateY(180));
 					return rivalTransform;
 				},
-				material: chrome,
+				material: chromeMaterial,
 				textured: -1.0,
 			};
 
-			objects = [myShip, rival, planet1];
-			determineRacePath(ring);
+			objects.push(rival);
 
 			// Initialize textures
 			let planetImage = new Image();
@@ -279,7 +287,8 @@ function checkIfInRing() {
 
 	if (hasCollided(shipTransform, ringTransform)) {
 		currentRingIndex++;
-		allRings[currentRingIndex + 1].material = chrome;
+		objects[0].speed += 0.1;
+		allRings[currentRingIndex].material = chromeMaterial;
 	}
 }
 
@@ -291,6 +300,7 @@ function checkIfInFinishLine() {
 	if (currentRingIndex === 19) {	// gone through all rings
 		if (hasCollided(shipTransform, finishLineTransform)) {
 			endGame = true;
+			userWon = true;
 		}
 	}
 }
@@ -313,31 +323,35 @@ function hasCollided(shipTransform, objectTransform) {
 
 // updates the timer by adding one second to the counter
 function updateTimer() {
-	let dt = Date.now() - (Date.now() + delay);
-	let timer = document.getElementById("timer");
-	let seconds = timer.innerHTML.substring(3);
-	let minutes = timer.innerHTML.substring(0, 2);
+	if (endGame) {
+		clearTimeout(timer);
+	} else {
+		let dt = Date.now() - (Date.now() + delay);
+		let timer = document.getElementById("timer");
+		let seconds = timer.innerHTML.substring(3);
+		let minutes = timer.innerHTML.substring(0, 2);
 
-	if (parseInt(seconds) + 1 === 60) {			// reach 60 seconds
-		let newMinutes = parseInt(minutes) + 1;
-		minutes = newMinutes.toString();
+		if (parseInt(seconds) + 1 === 60) {			// reach 60 seconds
+			let newMinutes = parseInt(minutes) + 1;
+			minutes = newMinutes.toString();
 
-		if (minutes.length === 1) {
-			minutes = "0" + minutes;
+			if (minutes.length === 1) {
+				minutes = "0" + minutes;
+			}
+
+			seconds = "00";
+		} else {									// add one to second counter
+			let newSeconds = parseInt(seconds) + 1;
+			seconds = newSeconds.toString();
+
+			if (seconds.length === 1) {
+				seconds = "0" + seconds;
+			}
 		}
 
-		seconds = "00";
-	} else {									// add one to second counter
-		let newSeconds = parseInt(seconds) + 1;
-		seconds = newSeconds.toString();
-
-		if (seconds.length === 1) {
-			seconds = "0" + seconds;
-		}
+		timer.innerHTML = minutes + ":" + seconds;
+		setTimeout(updateTimer, Math.max(0, delay - dt));
 	}
-
-	timer.innerHTML = minutes + ":" + seconds;
-	setTimeout(updateTimer, Math.max(0, delay - dt));
 }
 
 function draw() {
@@ -357,11 +371,11 @@ function draw() {
 	if (input[1] == 1) { tilt(3); }
 	else if (input[1] == -1) { tilt(-3); }
 
-	modelViewMatrix = lookAtGT(eye, vec3(0,0,1), up);//modified lookAtGT to remove at
+	modelViewMatrix = lookAtGT(eye, vec3(0, 0, 1), up);//modified lookAtGT to remove at
 
 	objects.forEach((obj) => {
 		gl.uniform1f(gl.getUniformLocation(program, "textured"), obj.textured);
-		if (obj.textured != -1.0)
+		if (obj.textured !== -1.0)
 			gl.uniform1i(gl.getUniformLocation(program, "u_textureMap"), obj.textured);
 		gl.uniformMatrix4fv(uniformModelView, false,
 			flatten(mult(modelViewMatrix, obj.transform())));
@@ -380,7 +394,12 @@ function draw() {
 		document.getElementById("finish").hidden = false;
 		let userTime = document.getElementById("timer").innerHTML;
 		document.getElementById("user-time").innerHTML = "Time: " + userTime;
-		document.getElementById("user-time").hidden = false;
-		clearTimeout(timer);
+		document.getElementById("who-won").hidden = false;
+		if (userWon) {
+			document.getElementById("who-won").innerHTML = "You won!";
+			document.getElementById("user-time").hidden = false;
+		} else {
+			document.getElementById("who-won").innerHTML = "You lost!";
+		}
 	}
 }

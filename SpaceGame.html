@@ -48,7 +48,7 @@
             vec4 ambient = ambientProduct;
 
             float Kd = max( dot(L, N), 0.0 );
-            vec4  diffuse = Kd*diffuseProduct;
+            vec4  diffuse = Kd * diffuseProduct;
 
             float Ks = pow( max(dot(N, H), 0.0), shininess );
             vec4  specular = Ks * specularProduct;
@@ -76,7 +76,7 @@
         uniform float textured;
 
 		void main() {
-            if (textured >= 0.0) 
+            if (textured >= 0.0)
                 f_color = v_color * texture(u_textureMap, v_texCoord);
             else 
                 f_color = v_color;
@@ -93,9 +93,11 @@
     <script type="text/javascript" src="shapes.js"></script>
 
     <link rel="stylesheet" href="style.css">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=PT+Mono&display=swap" rel="stylesheet">
 </head>
 
 <body onload="init();">
@@ -113,24 +115,27 @@
                 <canvas id="gl-canvas" width="650" height="650">
                     Oops ... your browser doesn't support the HTML5 canvas element
                 </canvas>
-                <p id="finish" hidden>Finished</p>
-                <p id="user-time" hidden></p>
-                <div id="rules-container">
-                    <p id="rules">
-                        A rival pilot challenges you—an ambitious new
-                        pilot—to a spaceship race around a nearby planet.
-                        <br>
-                        <br>
-                        If you get to the finish line before the rival
-                        pilot, you win a trophy.
-                        <br>
-                        <br>
-                        Go through all the rings and cross the finish line
-                        before the rival ship!
-                        <br>
-                        <br>
-                        (press space to start)
-                    </p>
+                <div id="layered-content">
+                    <p id="who-won" hidden></p>
+                    <p id="finish" hidden>Finished</p>
+                    <p id="user-time" hidden></p>
+                    <div id="rules-container">
+                        <p id="rules">
+                            A rival pilot challenges you—an ambitious new
+                            pilot—to a spaceship race around a nearby planet.
+                            <br>
+                            <br>
+                            If you get to the finish line before the rival
+                            pilot, you win a trophy.
+                            <br>
+                            <br>
+                            Go through all the rings and cross the finish line
+                            before the rival ship!
+                            <br>
+                            <br>
+                            (press space to start)
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -138,4 +143,5 @@
         <img id="finishLineTex" src="textures/finish-line.jpg" hidden>
     </div>
 </body>
+
 </html>
