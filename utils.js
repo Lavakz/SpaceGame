@@ -1,3 +1,5 @@
+"use strict";
+
 function getEyePosition(mv) {
 	let u = vec3(mv[0][0], mv[0][1], mv[0][2]);
 	let v = vec3(mv[1][0], mv[1][1], mv[1][2]);
@@ -110,10 +112,10 @@ function configureTexture( image, unitNum ) {
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 				break;
 		// finish line
-		case 1: gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, );
+		case 1: gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 				break;
 		// planet1
 		case 2: //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
