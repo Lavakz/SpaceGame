@@ -57,7 +57,8 @@ const gold = {
 const spaceshipMesh = {
 	vertices: myMesh.vertices[0].values,
 	indices: myMesh.connectivity[0].indices,
-	normals: myMesh.vertices[1].values
+	normals: myMesh.vertices[1].values,
+	texcoord: null
 };
 
 const ringMesh = {
@@ -100,8 +101,9 @@ function init() {
 			uniformProjection = gl.getUniformLocation(program, "u_projectionMatrix");
 
 			// Objects
+			spaceshipMesh.texcoord = createSphereVertices(10.0, 45.0, 45.0).texcoord; 
 			const myShip = {
-				vao: setUpVertexObject(spaceshipMesh),
+				vao: setUpVertexObject(spaceshipMesh, true),
 				indices: spaceshipMesh.indices,
 				transform() {
 					let eyePos = getEyePosition(modelViewMatrix);
@@ -114,7 +116,7 @@ function init() {
 					return shipTransform;
 				},
 				material: chromeMaterial,
-				textured: -1.0,
+				textured: 0.0,
 				speed: 2.0
 			};
 
@@ -125,7 +127,7 @@ function init() {
 				indices: v.indices,
 				transform() { return translate(300.0, 200.0, -1300); },
 				material: gold,
-				textured: 0.0
+				textured: 1.0
 			};
 
 			const ring = {
@@ -192,17 +194,20 @@ function init() {
 					return rivalTransform;
 				},
 				material: chromeMaterial,
-				textured: -1.0,
+				textured: 0.0,
 			};
 
 			objects.push(rival);
 
 			// Initialize textures
+			// -1: no texture, 0: ships, 1: goal, >2: planets
+			let shipImage = new Image();
+			shipImage.src = document.getElementById("shipTexture").src;
+			shipImage.onload = function () {configureTexture(shipImage, 0);}
+
 			let planetImage = new Image();
 			planetImage.src = document.getElementById("volcanoPlanetTex").src;
-			planetImage.onload = function () {
-				configureTexture(planetImage, program);
-			}
+			planetImage.onload = function () {configureTexture(planetImage, 1);}
 
 			// let finishLineImage = new Image();
 			// finishLineImage.src = document.getElementById("finishLineTex").src;

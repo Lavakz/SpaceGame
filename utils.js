@@ -45,7 +45,7 @@ function drawVertexObject(vao, iLength, mA, mD, mS, s) {
 }
 
 //Sets up a VAO 
-function setUpVertexObject(shape, isTextured) {
+function setUpVertexObject(shape, hasTexcoords) {
 	let indices = shape.indices;
 	let vertices = shape.vertices;
 	let normals = shape.normals;
@@ -72,7 +72,7 @@ function setUpVertexObject(shape, isTextured) {
 	gl.enableVertexAttribArray(attributeNormals);
 
 	//set up texture buffer
-	if (isTextured){
+	if (hasTexcoords){
 		let texcoords = shape.texcoord;
 		gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
 		gl.bufferData(gl.ARRAY_BUFFER, flatten(texcoords), gl.STATIC_DRAW);
@@ -87,11 +87,12 @@ function setUpVertexObject(shape, isTextured) {
 	return vao;
 }
 
-function configureTexture( image, program ) {
+function configureTexture( image, unitNum ) {
     texture = gl.createTexture();
-    gl.activeTexture( gl.TEXTURE0 );  
+	let units = [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2]
+	gl.activeTexture( units[unitNum] );  
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    
+
     //Flip the Y values to match the WebGL coordinates
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     
@@ -100,6 +101,17 @@ function configureTexture( image, program ) {
          
     //Set filters and parameters
     gl.generateMipmap(gl.TEXTURE_2D);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+	switch (unitNum) {
+		// ships
+		case 0: gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+				break;
+		// planet1
+		case 2: //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+				//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+				break;
+	}
 }
