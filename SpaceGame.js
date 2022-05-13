@@ -62,9 +62,9 @@ const spaceshipMesh = {
 };
 
 const ringMesh = {
-	vertices: myRingMesh.vertices[0].values,
-	indices: myRingMesh.connectivity[0].indices,
-	normals: myRingMesh.vertices[1].values
+	vertices: myRing.vertices[0].values,
+	indices: myRing.connectivity[0].indices,
+	normals: myRing.vertices[1].values
 };
 
 const finishLineMesh = {
