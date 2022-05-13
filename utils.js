@@ -89,7 +89,7 @@ function setUpVertexObject(shape, hasTexcoords) {
 
 function configureTexture( image, unitNum ) {
     texture = gl.createTexture();
-	let units = [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2]
+	let units = [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2, gl.TEXTURE3, gl.TEXTURE4]
 	gl.activeTexture( units[unitNum] );  
     gl.bindTexture(gl.TEXTURE_2D, texture);
 

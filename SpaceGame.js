@@ -4,7 +4,7 @@ let canvas;
 let gl;
 
 let near = 1;
-let far = 2000;
+let far = 4000;
 
 let eye = vec3(2, 2, 2);
 let up = vec3(0.0, 1.0, 0.0);
@@ -15,7 +15,7 @@ let modelViewMatrix, projectionMatrix;
 let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
-let lightPosition = vec4(-1000.0, 0.0, 0.0, 0.0);
+let lightPosition = vec4(0.0, 0.0, 0.0, -10.0);
 let thrusterPosition = vec4(0.0, 0.0, 0.0, 0.0);
 
 let program;
@@ -117,17 +117,37 @@ function init() {
 				},
 				material: chromeMaterial,
 				textured: 0.0,
-				speed: 1.9
+				speed: 2.5
 			};
 
-			let v;
-			const planet1 = {
-				vertices: v = createSphereVertices(170.0, 45.0, 45.0),
-				vao: setUpVertexObject(v, true),
-				indices: v.indices,
-				transform() { return translate(300.0, 200.0, -1300); },
+			let v1;
+			const volcano = {
+				vertices: v1 = createSphereVertices(170.0, 45.0, 45.0),
+				vao: setUpVertexObject(v1, true),
+				indices: v1.indices,
+				transform() { return translate(400.0, 200.0, -1400); },
 				material: gold,
 				textured: 1.0
+			};
+
+			let v2;
+			const earth = {
+				vertices: v2 = createSphereVertices(500.0, 45.0, 45.0),
+				vao: setUpVertexObject(v2, true),
+				indices: v2.indices,
+				transform() { return translate(-700.0, 0.0, -3500); },
+				material: gold,
+				textured: 3.0
+			};
+
+			let v3;
+			const gas = {
+				vertices: v3 = createSphereVertices(150.0, 45.0, 45.0),
+				vao: setUpVertexObject(v3, true),
+				indices: v3.indices,
+				transform() { return translate(500.0, 200.0, -4000); },
+				material: gold,
+				textured: 4.0
 			};
 
 			const ring = {
@@ -143,7 +163,7 @@ function init() {
 			};
 			allRings.push(ring);
 
-			objects = [myShip, planet1, ring];
+			objects = [myShip, volcano, gas, earth, ring];
 			determineRacePath(ring);
 
 			const finishLine = {
@@ -165,14 +185,14 @@ function init() {
 					// return mult(translate(0.0, 4.0, -550), mult(rotateY(90), scalem(1,30,30)));
 				},
 				material: chromeMaterial,
-				textured: 1.0	// textured with finish-line texture
+				textured: 2.0	// textured with finish-line texture
 			};
 
-			let rivalTransform = translate(10, 0, -250);
+			let rivalTransform = translate(10, 0, -200);
 			let rivalDirection = vec3(0, 0, -1);
 			let rivalRingNum = 0;
 			const rival = {
-				vao: setUpVertexObject(spaceshipMesh),
+				vao: setUpVertexObject(spaceshipMesh, true),
 				indices: spaceshipMesh.indices,
 				transform() {
 					rivalTransform = mult(rivalTransform, translate(rivalDirection));
@@ -203,19 +223,26 @@ function init() {
 			objects.push(finishLine);
 
 			// Initialize textures
-			// -1: no texture, 0: ships, 1: goal, >2: planets
 			let shipImage = new Image();
 			shipImage.src = document.getElementById("shipTexture").src;
-			shipImage.onload = function () {configureTexture(shipImage, 0);}
+			shipImage.onload = function () {configureTexture(shipImage, myShip.textured);}
 
-			let planetImage = new Image();
-			planetImage.src = document.getElementById("volcanoPlanetTex").src;
-			planetImage.onload = function () {configureTexture(planetImage, 1);}
+			let volcanoImage = new Image();
+			volcanoImage.src = document.getElementById("volcanoPlanetTex").src;
+			volcanoImage.onload = function () {configureTexture(volcanoImage, volcano.textured);}
+
+			let gasImage = new Image();
+			gasImage.src = document.getElementById("gasPlanetTex").src;
+			gasImage.onload = function () {configureTexture(gasImage, gas.textured);}
+
+			let earthImage = new Image();
+			earthImage.src = document.getElementById("earthPlanetTex").src;
+			earthImage.onload = function () {configureTexture(earthImage, earth.textured);}
 
 			let finishLineImage = new Image();
 			finishLineImage.src = document.getElementById("finishLineTex").src;
 			finishLineImage.onload = function () {
-				configureTexture(finishLineImage, 2);
+				configureTexture(finishLineImage, finishLine.textured);
 			}
 
 			document.onkeydown = function (ev) { keyHandler(ev, true); };
@@ -272,7 +299,7 @@ function updateRivalPath(targetTransform, rivalTransform) {
 		rivalTransform[2][3]);
 	target[0] += (Math.random() * 10) - 5;
 	target[1] += (Math.random() * 10) - 5;
-	return scale(2.0, normalize(subtract(target, position)));
+	return scale(3.1, normalize(subtract(target, position)));
 }
 
 // randomly generates the race path outlined by ring objects
