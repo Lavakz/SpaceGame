@@ -1,31 +1,31 @@
-function getEyePosition( mv ){
-    let u = vec3(mv[0][0],mv[0][1],mv[0][2]);       
-    let v = vec3(mv[1][0],mv[1][1],mv[1][2]); 
-    let n = vec3(mv[2][0],mv[2][1],mv[2][2]); 
-    let t = vec3(mv[0][3],mv[1][3],mv[2][3]);
+function getEyePosition(mv) {
+	let u = vec3(mv[0][0], mv[0][1], mv[0][2]);
+	let v = vec3(mv[1][0], mv[1][1], mv[1][2]);
+	let n = vec3(mv[2][0], mv[2][1], mv[2][2]);
+	let t = vec3(mv[0][3], mv[1][3], mv[2][3]);
 
-    let axesInv = inverse3([u,v,n]);
-    let eye = multM3V3(axesInv,t);
-    return vec3(-eye[0],-eye[1],-eye[2]);
+	let axesInv = inverse3([u, v, n]);
+	let eye = multM3V3(axesInv, t);
+	return vec3(-eye[0], -eye[1], -eye[2]);
 }
 
-function setEyePosition( mv, eye ){
-    let u = vec3(mv[0][0],mv[0][1],mv[0][2]);       
-    let v = vec3(mv[1][0],mv[1][1],mv[1][2]); 
-    let n = vec3(mv[2][0],mv[2][1],mv[2][2]); 
+function setEyePosition(mv, eye) {
+	let u = vec3(mv[0][0], mv[0][1], mv[0][2]);
+	let v = vec3(mv[1][0], mv[1][1], mv[1][2]);
+	let n = vec3(mv[2][0], mv[2][1], mv[2][2]);
 
-    let negEye = vec3(-eye[0], -eye[1], -eye[2]);
-    mv[0][3] = dot(negEye,u);
-    mv[1][3] = dot(negEye,v);
-    mv[2][3] = dot(negEye,n);
+	let negEye = vec3(-eye[0], -eye[1], -eye[2]);
+	mv[0][3] = dot(negEye, u);
+	mv[1][3] = dot(negEye, v);
+	mv[2][3] = dot(negEye, n);
 }
 
-function multM3V3( u, v ) {
-    let result = [];
-    result[0] = u[0][0]*v[0] + u[0][1]*v[1] + u[0][2]*v[2];
-    result[1] = u[1][0]*v[0] + u[1][1]*v[1] + u[1][2]*v[2];
-    result[2] = u[2][0]*v[0] + u[2][1]*v[1] + u[2][2]*v[2];
-    return result;
+function multM3V3(u, v) {
+	let result = [];
+	result[0] = u[0][0] * v[0] + u[0][1] * v[1] + u[0][2] * v[2];
+	result[1] = u[1][0] * v[0] + u[1][1] * v[1] + u[1][2] * v[2];
+	result[2] = u[2][0] * v[0] + u[2][1] * v[1] + u[2][2] * v[2];
+	return result;
 }
 
 //Loads a VAO and draws it
@@ -44,7 +44,7 @@ function drawVertexObject(vao, iLength, mA, mD, mS, s) {
 }
 
 //Sets up a VAO 
-function setUpVertexObject(shape, isTextured) {
+function setUpVertexObject(shape, isTextured, textureNumber) {
 	let indices = shape.indices;
 	let vertices = shape.vertices;
 	let normals = shape.normals;
@@ -71,7 +71,7 @@ function setUpVertexObject(shape, isTextured) {
 	gl.enableVertexAttribArray(attributeNormals);
 
 	//set up texture buffer
-	if (isTextured){
+	if (isTextured) {
 		let texcoords = shape.texcoord;
 		gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
 		gl.bufferData(gl.ARRAY_BUFFER, flatten(texcoords), gl.STATIC_DRAW);
@@ -86,19 +86,20 @@ function setUpVertexObject(shape, isTextured) {
 	return vao;
 }
 
-function configureTexture( image, program ) {
-    texture = gl.createTexture();
-    gl.activeTexture( gl.TEXTURE0 );  
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    
-    //Flip the Y values to match the WebGL coordinates
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    
-    //Specify the image as a texture array:
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
-         
-    //Set filters and parameters
-    gl.generateMipmap(gl.TEXTURE_2D);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+function configureTexture(image) {
+	texture = gl.createTexture();
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+
+
+	//Flip the Y values to match the WebGL coordinates
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+	//Specify the image as a texture array:
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+
+	//Set filters and parameters
+	gl.generateMipmap(gl.TEXTURE_2D);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 }

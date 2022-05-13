@@ -20,7 +20,7 @@ let lightPosition = vec4(-1000.0, 0.0, 0.0, 0.0);
 let program;
 let objects;
 
-let texture;
+let textures = [];
 
 let theta = 0.0;
 let direction = vec3(0, 0, -1);
@@ -66,9 +66,9 @@ const ringMesh = {
 };
 
 const finishLineMesh = {
-	// vertices,
-	// indices,
-	// normals
+	vertices: finishLine.vertices[0].values,
+	indices: finishLine.connectivity[0].indices,
+	normals: finishLine.vertices[1].values
 };
 
 // questions to answer:
@@ -139,9 +139,12 @@ function init() {
 			};
 			allRings.push(ring);
 
+			objects = [myShip, planet1, ring];
+			determineRacePath(ring);
+
 			const finishLine = {
-				// vao,
-				// indices,
+				vao: setUpVertexObject(finishLineMesh),
+				indices: finishLineMesh.indices,
 				transform() {
 					let lastRingTransform = allRings[allRings.length - 1].transform();
 					return mult(
@@ -150,15 +153,16 @@ function init() {
 							lastRingTransform[1][3],
 							lastRingTransform[2][3] - 500
 						),
-						scalem(5, 5, 0)
+						mult(
+							rotateY(90),
+							scalem(1, 30, 30)
+						)
 					);
+					// return mult(translate(0.0, 4.0, -550), mult(rotateY(90), scalem(1,30,30)));
 				},
-				material: gold,
-				textured: -1.0	// textured with finish-line texture
+				material: chromeMaterial,
+				textured: 1.0	// textured with finish-line texture
 			};
-
-			objects = [myShip, planet1, ring];
-			determineRacePath(ring);
 
 			let rivalTransform = translate(10, 0, -250);
 			let rivalDirection = vec3(0, 0, -1);
@@ -169,19 +173,17 @@ function init() {
 				transform() {
 					rivalTransform = mult(rivalTransform, translate(rivalDirection));
 					if (hasCollided(rivalTransform, allRings[rivalRingNum].transform())) {
-						if (rivalRingNum !== 19) {
+						if (rivalRingNum !== allRings.length - 1) {
 							rivalRingNum++;
 							let targetTransform = allRings[rivalRingNum].transform();
-							let target = vec3(targetTransform[0][3],
-								targetTransform[1][3],
-								targetTransform[2][3]);
-							let position = vec3(rivalTransform[0][3],
-								rivalTransform[1][3],
-								rivalTransform[2][3]);
-							target[0] += (Math.random() * 10) - 5;
-							target[1] += (Math.random() * 10) - 5;
-							rivalDirection = scale(2.0, normalize(subtract(target, position)));
-						} else {
+							rivalDirection = updateRivalPath(targetTransform, rivalTransform);
+						}
+					} else if (rivalRingNum === allRings.length - 1) {
+						let targetTransform = objects[objects.length - 1].transform();
+						console.log(targetTransform);
+						console.log(rivalTransform);
+						rivalDirection = updateRivalPath(targetTransform, rivalTransform);
+						if (hasCollided(rivalTransform, objects[objects.length - 1].transform())) {			// rival has won
 							endGame = true;
 							userWon = false;
 						}
@@ -194,19 +196,20 @@ function init() {
 			};
 
 			objects.push(rival);
+			objects.push(finishLine);
 
 			// Initialize textures
 			let planetImage = new Image();
 			planetImage.src = document.getElementById("volcanoPlanetTex").src;
 			planetImage.onload = function () {
-				configureTexture(planetImage, program);
+				configureTexture(planetImage);
 			}
 
-			// let finishLineImage = new Image();
-			// finishLineImage.src = document.getElementById("finishLineTex").src;
-			// finishLineImage.onload = function () {
-			// 	configureTexture(finishLineImage, program);
-			// }
+			let finishLineImage = new Image();
+			finishLineImage.src = document.getElementById("finishLineTex").src;
+			finishLineImage.onload = function () {
+				configureTexture(finishLineImage);
+			}
 
 			document.onkeydown = function (ev) { keyHandler(ev, true); };
 			document.onkeyup = function (ev) { keyHandler(ev, false); };
@@ -253,10 +256,22 @@ function turn(t) {
 		-Math.cos(radians(theta))));
 }
 
+function updateRivalPath(targetTransform, rivalTransform) {
+	let target = vec3(targetTransform[0][3],
+		targetTransform[1][3],
+		targetTransform[2][3]);
+	let position = vec3(rivalTransform[0][3],
+		rivalTransform[1][3],
+		rivalTransform[2][3]);
+	target[0] += (Math.random() * 10) - 5;
+	target[1] += (Math.random() * 10) - 5;
+	return scale(2.0, normalize(subtract(target, position)));
+}
+
 // randomly generates the race path outlined by ring objects
 function determineRacePath(ringObject) {
 	let lastRing = allRings[0];
-	for (let count = 0; count < 19; count++) {	// path of 20 rings
+	for (let count = 0; count < 5; count++) {	// path of 20 rings
 		let previousTransformation = lastRing.transform();
 		let newX = previousTransformation[0][3] + (Math.random() * difficulty);
 		let newY = previousTransformation[0][3] + (Math.random() * difficulty);
@@ -297,11 +312,9 @@ function checkIfInFinishLine() {
 	let finishLineTransform = objects[objects.length - 1].transform();
 	let shipTransform = objects[0].transform();
 
-	if (currentRingIndex === 19) {	// gone through all rings
-		if (hasCollided(shipTransform, finishLineTransform)) {
-			endGame = true;
-			userWon = true;
-		}
+	if (hasCollided(shipTransform, finishLineTransform)) {
+		endGame = true;
+		userWon = true;
 	}
 }
 
@@ -314,6 +327,7 @@ function hasCollided(shipTransform, objectTransform) {
 			let yDifference = shipTransform[1][3] - objectTransform[1][3];
 			if (yDifference >= -50 && yDifference <= 50) { // within 50 y pixels of center of ring
 				return true;	// collided with object
+
 			}
 		}
 	}
@@ -323,7 +337,7 @@ function hasCollided(shipTransform, objectTransform) {
 
 // updates the timer by adding one second to the counter
 function updateTimer() {
-	if (endGame) {
+	if (endGame) {			// reached the end of the game, stop the clock
 		clearTimeout(timer);
 	} else {
 		let dt = Date.now() - (Date.now() + delay);
@@ -385,8 +399,10 @@ function draw() {
 			obj.material.specular, obj.material.shininess);
 	});
 
-	checkIfInRing();
-	checkIfInFinishLine();
+	if (currentRingIndex !== allRings.length - 1)
+		checkIfInRing();
+	else
+		checkIfInFinishLine();
 
 	if (!endGame)
 		requestAnimationFrame(draw);
@@ -395,6 +411,7 @@ function draw() {
 		let userTime = document.getElementById("timer").innerHTML;
 		document.getElementById("user-time").innerHTML = "Time: " + userTime;
 		document.getElementById("who-won").hidden = false;
+
 		if (userWon) {
 			document.getElementById("who-won").innerHTML = "You won!";
 			document.getElementById("user-time").hidden = false;
