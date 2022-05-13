@@ -53,6 +53,13 @@ const gold = {
 	shininess: 0.4
 };
 
+const jade = {
+	ambient: vec4(0.135, 0.2225, 0.1575, 1.0),
+	diffuse: vec4(0.54, 0.89, 0.63, 1.0),
+	specular: vec4(0.316228, 0.316228, 0.316228, 1.0),
+	shininess: 0.6
+};
+
 // Shapes
 const spaceshipMesh = {
 	vertices: myMesh.vertices[0].values,
@@ -70,7 +77,8 @@ const ringMesh = {
 const finishLineMesh = {
 	vertices: finishLine.vertices[0].values,
 	indices: finishLine.connectivity[0].indices,
-	normals: finishLine.vertices[1].values
+	normals: finishLine.vertices[1].values,
+	texcoord: finishLine.vertices[3].values
 };
 
 // questions to answer:
@@ -117,7 +125,7 @@ function init() {
 				},
 				material: chromeMaterial,
 				textured: 0.0,
-				speed: 2.0
+				speed: 1.9
 			};
 
 			let v;
@@ -127,7 +135,7 @@ function init() {
 				indices: v.indices,
 				transform() { return translate(300.0, 200.0, -1300); },
 				material: gold,
-				textured: 1.0
+				textured: 2.0
 			};
 
 			const ring = {
@@ -147,7 +155,7 @@ function init() {
 			determineRacePath(ring);
 
 			const finishLine = {
-				vao: setUpVertexObject(finishLineMesh),
+				vao: setUpVertexObject(finishLineMesh, true),
 				indices: finishLineMesh.indices,
 				transform() {
 					let lastRingTransform = allRings[allRings.length - 1].transform();
@@ -159,10 +167,9 @@ function init() {
 						),
 						mult(
 							rotateY(90),
-							scalem(1, 30, 30)
+							scalem(1, 1.2, 2)
 						)
 					);
-					// return mult(translate(0.0, 4.0, -550), mult(rotateY(90), scalem(1,30,30)));
 				},
 				material: chromeMaterial,
 				textured: 1.0	// textured with finish-line texture
@@ -176,7 +183,7 @@ function init() {
 				indices: spaceshipMesh.indices,
 				transform() {
 					rivalTransform = mult(rivalTransform, translate(rivalDirection));
-					if (hasCollided(rivalTransform, allRings[rivalRingNum].transform())) {
+					if (hasCollided(rivalTransform, allRings[rivalRingNum].transform(), 50, 50)) {
 						if (rivalRingNum !== allRings.length - 1) {
 							rivalRingNum++;
 							let targetTransform = allRings[rivalRingNum].transform();
@@ -184,10 +191,8 @@ function init() {
 						}
 					} else if (rivalRingNum === allRings.length - 1) {
 						let targetTransform = objects[objects.length - 1].transform();
-						console.log(targetTransform);
-						console.log(rivalTransform);
 						rivalDirection = updateRivalPath(targetTransform, rivalTransform);
-						if (hasCollided(rivalTransform, objects[objects.length - 1].transform())) {			// rival has won
+						if (hasCollided(rivalTransform, objects[objects.length - 1].transform(), 80, 60)) {			// rival has won
 							endGame = true;
 							userWon = false;
 						}
@@ -196,7 +201,7 @@ function init() {
 					return rivalTransform;
 				},
 				material: chromeMaterial,
-				textured: 0.0,
+				textured: 0.0
 			};
 
 			objects.push(rival);
@@ -210,12 +215,12 @@ function init() {
 
 			let planetImage = new Image();
 			planetImage.src = document.getElementById("volcanoPlanetTex").src;
-			planetImage.onload = function () {configureTexture(planetImage, 1);}
+			planetImage.onload = function () {configureTexture(planetImage, 2);}
 
 			let finishLineImage = new Image();
 			finishLineImage.src = document.getElementById("finishLineTex").src;
 			finishLineImage.onload = function () {
-				configureTexture(finishLineImage, 2);
+				configureTexture(finishLineImage, 1);
 			}
 
 			document.onkeydown = function (ev) { keyHandler(ev, true); };
@@ -241,10 +246,10 @@ function init() {
 let input = [0, 0]
 function keyHandler(event, isDown) {
 	switch (event.key) {
-		case "w": input[0] = (isDown ? 1 : 0); break;
-		case "s": input[0] = (isDown ? -1 : 0); break;
-		case "d": input[1] = (isDown ? 1 : 0); break;
-		case "a": input[1] = (isDown ? -1 : 0); break;
+		case "w": case "W": input[0] = (isDown ? 1 : 0); break;
+		case "s": case "S": input[0] = (isDown ? -1 : 0); break;
+		case "d": case "D": input[1] = (isDown ? 1 : 0); break;
+		case "a": case "A": input[1] = (isDown ? -1 : 0); break;
 	}
 }
 
@@ -278,7 +283,7 @@ function updateRivalPath(targetTransform, rivalTransform) {
 // randomly generates the race path outlined by ring objects
 function determineRacePath(ringObject) {
 	let lastRing = allRings[0];
-	for (let count = 0; count < 5; count++) {	// path of 20 rings
+	for (let count = 0; count < 2; count++) {	// path of 10 rings
 		let previousTransformation = lastRing.transform();
 		let newX = previousTransformation[0][3] + (Math.random() * difficulty);
 		let newY = previousTransformation[0][3] + (Math.random() * difficulty);
@@ -307,10 +312,10 @@ function checkIfInRing() {
 	let ringTransform = allRings[currentRingIndex + 1].transform();
 	let shipTransform = objects[0].transform();
 
-	if (hasCollided(shipTransform, ringTransform)) {
+	if (hasCollided(shipTransform, ringTransform, 50, 50)) {
 		currentRingIndex++;
-		objects[0].speed += 0.1;
-		allRings[currentRingIndex].material = chromeMaterial;
+		objects[0].speed += 0.2;
+		allRings[currentRingIndex].material = jade;
 	}
 }
 
@@ -319,20 +324,20 @@ function checkIfInFinishLine() {
 	let finishLineTransform = objects[objects.length - 1].transform();
 	let shipTransform = objects[0].transform();
 
-	if (hasCollided(shipTransform, finishLineTransform)) {
+	if (hasCollided(shipTransform, finishLineTransform, 80, 60)) {
 		endGame = true;
 		userWon = true;
 	}
 }
 
 // checks if ship has passed through an object
-function hasCollided(shipTransform, objectTransform) {
+function hasCollided(shipTransform, objectTransform, xPixels, yPixels) {
 	let zDifference = shipTransform[2][3] - objectTransform[2][3];
 	if (zDifference >= -2 && zDifference <= 2) { // within 2 z pixels of center of ring
 		let xDifference = shipTransform[0][3] - objectTransform[0][3];
-		if (xDifference >= -50 && xDifference <= 50) { // within 50 x pixels of center of ring
+		if (xDifference >= -xPixels && xDifference <= xPixels) { // within 50 x pixels of center of ring
 			let yDifference = shipTransform[1][3] - objectTransform[1][3];
-			if (yDifference >= -50 && yDifference <= 50) { // within 50 y pixels of center of ring
+			if (yDifference >= -yPixels && yDifference <= yPixels) { // within 50 y pixels of center of ring
 				return true;	// collided with object
 
 			}
@@ -418,12 +423,13 @@ function draw() {
 		let userTime = document.getElementById("timer").innerHTML;
 		document.getElementById("user-time").innerHTML = "Time: " + userTime;
 		document.getElementById("who-won").hidden = false;
+		document.getElementById("timer").hidden = true;
 
 		if (userWon) {
 			document.getElementById("who-won").innerHTML = "You won!";
 			document.getElementById("user-time").hidden = false;
 		} else {
-			document.getElementById("who-won").innerHTML = "You lost!";
+			document.getElementById("who-won").innerHTML = "You lost";
 		}
 	}
 }
