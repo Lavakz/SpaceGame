@@ -38,13 +38,14 @@ function drawVertexObject(vao, iLength, mA, mD, mS, s) {
 	gl.uniform4fv(gl.getUniformLocation(program, "diffuseProduct"), flatten(diffuseProduct));
 	gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), flatten(specularProduct));
 	gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition));
+	gl.uniform4fv(gl.getUniformLocation(program, "thrusterPosition"), flatten(thrusterPosition));
 
 	gl.bindVertexArray(vao);
 	gl.drawElements(gl.TRIANGLES, iLength, gl.UNSIGNED_SHORT, 0);
 }
 
 //Sets up a VAO 
-function setUpVertexObject(shape, isTextured, textureNumber) {
+function setUpVertexObject(shape, hasTexcoords) {
 	let indices = shape.indices;
 	let vertices = shape.vertices;
 	let normals = shape.normals;
@@ -71,7 +72,7 @@ function setUpVertexObject(shape, isTextured, textureNumber) {
 	gl.enableVertexAttribArray(attributeNormals);
 
 	//set up texture buffer
-	if (isTextured) {
+	if (hasTexcoords){
 		let texcoords = shape.texcoord;
 		gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
 		gl.bufferData(gl.ARRAY_BUFFER, flatten(texcoords), gl.STATIC_DRAW);
@@ -86,20 +87,31 @@ function setUpVertexObject(shape, isTextured, textureNumber) {
 	return vao;
 }
 
-function configureTexture(image) {
-	texture = gl.createTexture();
-	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, texture);
+function configureTexture( image, unitNum ) {
+    texture = gl.createTexture();
+	let units = [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2]
+	gl.activeTexture( units[unitNum] );  
+    gl.bindTexture(gl.TEXTURE_2D, texture);
 
+    //Flip the Y values to match the WebGL coordinates
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    
+    //Specify the image as a texture array:
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+         
+    //Set filters and parameters
+    gl.generateMipmap(gl.TEXTURE_2D);
 
-	//Flip the Y values to match the WebGL coordinates
-	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-
-	//Specify the image as a texture array:
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
-
-	//Set filters and parameters
-	gl.generateMipmap(gl.TEXTURE_2D);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	switch (unitNum) {
+		// ships
+		case 0: gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+				break;
+		// planet1
+		case 2: //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+				//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+				break;
+	}
 }

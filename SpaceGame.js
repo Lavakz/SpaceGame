@@ -16,11 +16,12 @@ let lightDiffuse = vec4(1.0, 1.0, 1.0, 1.0);
 let lightAmbient = vec4(1.0, 1.0, 1.0, 1.0);
 let lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 let lightPosition = vec4(-1000.0, 0.0, 0.0, 0.0);
+let thrusterPosition = vec4(0.0, 0.0, 0.0, 0.0);
 
 let program;
 let objects;
 
-let textures = [];
+let texture;
 
 let theta = 0.0;
 let direction = vec3(0, 0, -1);
@@ -56,7 +57,8 @@ const gold = {
 const spaceshipMesh = {
 	vertices: myMesh.vertices[0].values,
 	indices: myMesh.connectivity[0].indices,
-	normals: myMesh.vertices[1].values
+	normals: myMesh.vertices[1].values,
+	texcoord: null
 };
 
 const ringMesh = {
@@ -99,12 +101,14 @@ function init() {
 			uniformProjection = gl.getUniformLocation(program, "u_projectionMatrix");
 
 			// Objects
+			spaceshipMesh.texcoord = createSphereVertices(10.0, 45.0, 45.0).texcoord; 
 			const myShip = {
-				vao: setUpVertexObject(spaceshipMesh),
+				vao: setUpVertexObject(spaceshipMesh, true),
 				indices: spaceshipMesh.indices,
 				transform() {
 					let eyePos = getEyePosition(modelViewMatrix);
 					let shipTransform = translate(eyePos[0], eyePos[1], eyePos[2]);
+					thrusterPosition = vec4(eyePos[0], eyePos[1]-5, eyePos[2]-30, 0.0);
 					shipTransform = mult(shipTransform, rotateZ(tiltDegrees));
 					shipTransform = mult(shipTransform, translate(0, -5, -40));
 					shipTransform = mult(shipTransform, rotateX(-theta));
@@ -112,7 +116,7 @@ function init() {
 					return shipTransform;
 				},
 				material: chromeMaterial,
-				textured: -1.0,
+				textured: 0.0,
 				speed: 2.0
 			};
 
@@ -123,7 +127,7 @@ function init() {
 				indices: v.indices,
 				transform() { return translate(300.0, 200.0, -1300); },
 				material: gold,
-				textured: 0.0
+				textured: 1.0
 			};
 
 			const ring = {
@@ -192,23 +196,26 @@ function init() {
 					return rivalTransform;
 				},
 				material: chromeMaterial,
-				textured: -1.0,
+				textured: 0.0,
 			};
 
 			objects.push(rival);
 			objects.push(finishLine);
 
 			// Initialize textures
+			// -1: no texture, 0: ships, 1: goal, >2: planets
+			let shipImage = new Image();
+			shipImage.src = document.getElementById("shipTexture").src;
+			shipImage.onload = function () {configureTexture(shipImage, 0);}
+
 			let planetImage = new Image();
 			planetImage.src = document.getElementById("volcanoPlanetTex").src;
-			planetImage.onload = function () {
-				configureTexture(planetImage);
-			}
+			planetImage.onload = function () {configureTexture(planetImage, 1);}
 
 			let finishLineImage = new Image();
 			finishLineImage.src = document.getElementById("finishLineTex").src;
 			finishLineImage.onload = function () {
-				configureTexture(finishLineImage);
+				configureTexture(finishLineImage, 2);
 			}
 
 			document.onkeydown = function (ev) { keyHandler(ev, true); };
