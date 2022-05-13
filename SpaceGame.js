@@ -283,7 +283,7 @@ function updateRivalPath(targetTransform, rivalTransform) {
 // randomly generates the race path outlined by ring objects
 function determineRacePath(ringObject) {
 	let lastRing = allRings[0];
-	for (let count = 0; count < 2; count++) {	// path of 10 rings
+	for (let count = 0; count < 9; count++) {	// path of 10 rings
 		let previousTransformation = lastRing.transform();
 		let newX = previousTransformation[0][3] + (Math.random() * difficulty);
 		let newY = previousTransformation[0][3] + (Math.random() * difficulty);
