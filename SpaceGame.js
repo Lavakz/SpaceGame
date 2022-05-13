@@ -117,7 +117,7 @@ function init() {
 				},
 				material: chromeMaterial,
 				textured: 0.0,
-				speed: 2.0
+				speed: 1.9
 			};
 
 			let v;
