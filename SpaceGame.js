@@ -192,7 +192,7 @@ function init() {
 					);
 				},
 				material: chromeMaterial,
-				textured: 2.0	// textured with finish-line texture
+				textured: 1.0	
 			};
 
 			let rivalTransform = translate(10, 0, -200);
@@ -247,7 +247,7 @@ function init() {
 			let finishLineImage = new Image();
 			finishLineImage.src = document.getElementById("finishLineTex").src;
 			finishLineImage.onload = function () {
-				configureTexture(finishLineImage, 1);
+				configureTexture(finishLineImage, finishLine.textured);
 			}
 
 			document.onkeydown = function (ev) { keyHandler(ev, true); };
