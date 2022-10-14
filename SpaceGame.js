@@ -81,12 +81,6 @@ const finishLineMesh = {
 	texcoord: finishLine.vertices[3].values
 };
 
-// questions to answer:
-//   - does the rival spaceship's speed change (random speed throughout)?
-//   - how does your spaceship's speed change?
-//   - can you move around planets and other objects?
-//   - how is the race path determined?
-
 function init() {
 	document.onkeydown = function (ev) {
 		if (ev.code === "Space") {
