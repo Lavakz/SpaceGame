@@ -1,0 +1,137 @@
+@font-face{
+    font-family:'digital clock font';
+    src: url('fonts/alarmclock.ttf') format("truetype");
+}
+
+body {
+    background-color: black;
+    background-image: url("images/background.avif");
+    background-repeat: none;
+    display: flex;
+    align-items: center;
+    font-family: 'Space Mono', monospace;
+}
+
+h1 {
+    margin: 5px 0;
+    padding: 5px;
+    text-align: center;
+    font-size: 50px;
+    background-color: black;
+    color: white;
+}
+
+#instructions {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    background-color: black;
+    color: white;
+    width: 150px;
+    height: 350px;
+    margin: 0 auto;
+    padding: 10px 5px;
+}
+
+#instructions p {
+    font-size: 17px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 70%;
+    margin: 0 auto;
+}
+
+#second-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+#second-container div {
+    margin: 0 30px;
+}
+
+#canvas-timer {
+    flex: 1;
+    display: flex;
+    position: relative;
+}
+
+#gl-canvas {
+    z-index: 0;
+}
+
+#timer {
+    z-index: 1;
+    margin: 0;
+    position: absolute;
+}
+
+#timer {
+    color: red;
+    padding: 10px 10px;
+    font-size: 32px;
+    font-family: 'digital clock font', cursive;
+}
+
+#layered-content, #rules-container {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    margin: 0;
+    position: absolute;
+    height: 650px;
+    width: 650px;
+    align-items: center;
+    top: 0;
+    left: -30px;
+}
+
+#layered-content {
+    justify-content: center;
+}
+
+#layered-content p {
+    margin: 0;
+}
+
+#who-won {
+    text-transform: uppercase;
+    text-align: center;
+    font-size: 30px;
+}
+
+#finish {
+    font-size: 100px;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+#rules-container {
+    justify-content: center;
+}
+
+#rules-container #rules {
+    background-color: black;
+    padding: 20px;
+    width: 530px;
+    font-size: 25px;
+    font-weight: bold;
+    line-height: 1.3em;
+    text-align: center;
+    font-family: monospace;
+}
+
+#user-time {
+    font-size: 25px;
+    font-weight: bold;
+    text-align: center;
+    font-family: monospace;
+}
